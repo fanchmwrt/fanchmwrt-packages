@@ -26,10 +26,20 @@ function api_set_system_info()
     local json = require "luci.jsonc"
     local http = require "luci.http"
     local lan_ifname = http.formvalue("lan_ifname") or ""
+    local theme_mode = http.formvalue("theme_mode")
+    local theme_mode_num = 0 -- 默认值为0（light）
+    if theme_mode then
+        theme_mode_num = tonumber(theme_mode) or 0
+        -- 验证值只能是0或1
+        if theme_mode_num ~= 0 and theme_mode_num ~= 1 then
+            theme_mode_num = 0
+        end
+    end
     
     local body = {
         fwx = {
-            lan_ifname = lan_ifname
+            lan_ifname = lan_ifname,
+            theme_mode = theme_mode_num
         }
     }
     local resp = ubus_call("set_system_info", { data = body })

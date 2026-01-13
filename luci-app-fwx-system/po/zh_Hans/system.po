@@ -31,3 +31,15 @@ msgstr "保存成功"
 
 msgid "Save failed"
 msgstr "保存失败"
+
+msgid "Theme Mode"
+msgstr "主题模式"
+
+msgid "Light"
+msgstr "浅色"
+
+msgid "Dark"
+msgstr "暗色"
+
+msgid "Set fanchmwrt theme mode"
+msgstr "设置fanchmwrt主题的模式"

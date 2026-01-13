@@ -3,6 +3,16 @@
 <script src="<%=resource%>/echarts.min.js"></script>
 
 <style>
+    :root {
+        --chart-text-color: #333333;
+        --chart-axis-line-color: rgba(0, 0, 0, 0.2);
+        --chart-axis-label-color: #666666;
+        --chart-split-line-color: rgba(0, 0, 0, 0.08);
+        --chart-split-line-dashed-color: rgba(0, 0, 0, 0.15);
+        --chart-tooltip-bg: rgba(255, 255, 255, 0.95);
+        --chart-tooltip-text: #333333;
+    }
+    
     .dash {
         display: grid;
         grid-template-columns: 1fr 300px; 
@@ -10,8 +20,6 @@
         padding: 8px;
     }
     .card {
-        background: rgba(255,255,255,0.03);
-        border: 1px solid rgba(255,255,255,0.08);
         border-radius: 8px;
         padding: 4px 12px;
         min-height: 200px;
@@ -39,32 +47,24 @@
     .tab-btn {
         padding: 4px 12px;
         font-size: 12px;
-        border: 1px solid rgba(255,255,255,0.2);
-        background: rgba(255,255,255,0.05);
-        color: #c9d1d9;
         border-radius: 4px;
         cursor: pointer;
         transition: all 0.2s;
     }
     .tab-btn:hover {
-        background: rgba(255,255,255,0.1);
     }
     .tab-btn.active {
         background: rgba(59, 130, 246, 0.3);
         border-color: rgba(59, 130, 246, 0.5);
-        color: #60a5fa;
+        color: #3b82f6;
     }
     .top-stats { display:grid; grid-template-columns: repeat(5,1fr); gap:8px; margin-bottom:10px; }
     .top-stats .big { font-size:15px; font-weight:600; }
     .top-stats .top-stat-value {
         font-size:15px;
         font-weight:160;
-        color: #fff7f5;
-     
     }
     .mini {
-        background: rgba(255,255,255,0.04);
-        border: 1px solid rgba(255,255,255,0.06);
         border-radius: 8px;
         padding: 15px 10px;
         font-size: 12px;
@@ -87,7 +87,9 @@
         text-overflow: ellipsis;
         white-space: nowrap;
     }
-    .meter { height: 6px; background: #1f2933; border-radius: 0; overflow: visible; position: relative; }
+    .meter { height: 6px; background: rgba(0, 0, 0, 0.08); border-radius: 0; overflow: visible; position: relative; }
+    
+    [data-darkmode="true"] .meter { background: #1f2933; }
     .bar { height: 100%; width: 0; background: linear-gradient(90deg,#16a34a,#22c55e); position: relative; overflow: visible; border-radius: 0; }
     
     .sys-info-layout {
@@ -106,11 +108,9 @@
         line-height: 1.6;
     }
     .sys-info-text-label {
-        color: rgba(255,255,255,0.6);
         margin-right: 6px;
     }
     .sys-info-text-value {
-        color: rgba(255,255,255,0.9);
         font-weight: 500;
     }
     .sys-info-circulars {
@@ -141,13 +141,16 @@
     .circular-progress-label {
         margin-top: 10px;
         font-size: 13px;
-        color: rgba(255,255,255,0.7);
         text-align: center;
     }
     .circular-progress .progress-ring-bg {
         fill: none;
-        stroke: rgba(255,255,255,0.1);
+        stroke: rgba(0, 0, 0, 0.1); 
         stroke-width: 7;
+    }
+    
+    [data-darkmode="true"] .circular-progress .progress-ring-bg {
+        stroke: rgba(255,255,255,0.1);
     }
     .circular-progress .progress-ring {
         fill: none;
@@ -168,7 +171,6 @@
         transform: translate(-50%, -50%);
         font-size: 14px;
         font-weight: 600;
-        color: rgba(255,255,255,0.9);
     }
     .progress-info {
         display: flex;
@@ -177,13 +179,11 @@
     }
     .progress-info-label {
         font-size: 12px;
-        color: rgba(255,255,255,0.6);
         margin-bottom: 2px;
     }
     .progress-info-value {
         font-size: 16px;
         font-weight: 600;
-        color: rgba(255,255,255,0.9);
     }
     .main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .full { grid-column: 1 / -1; }
@@ -192,7 +192,7 @@
         min-height: 300px;
     }
     .list table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-    .list th, .list td { border-bottom: 1px solid rgba(255,255,255,0.06); padding: 6px 4px; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .list th, .list td { border-bottom: 1px solid var(--border-color-low); padding: 6px 4px; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .list th:nth-child(1), .list td:nth-child(1) { width: 12%; } 
     .list th:nth-child(2), .list td:nth-child(2) { width: 10%; } 
     .list th:nth-child(3), .list td:nth-child(3) { width: 10%; } 
@@ -228,7 +228,6 @@
     }
     .app-name {
         font-size: 12px;
-        color: rgba(255,255,255,0.8);
         word-break: break-word;
         line-height: 1.3;
     }
@@ -247,7 +246,7 @@
         flex-direction: row;
         align-items: center;
         padding: 10px 12px;
-        border-bottom: 1px solid rgba(255,255,255,0.06);
+        border-bottom: 1px solid var(--border-color-low);
     }
     .active-url-item.slide-in {
         animation: slideInFromBottom 0.4s ease-out;
@@ -267,7 +266,6 @@
     }
     .active-url-item {
         font-size: 12px;
-        color: rgba(255,255,255,0.8);
         line-height: 1.4;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -279,9 +277,7 @@
         font-weight: 500;
         margin-right: 6px;
     }
-    .active-url-url {
-        color: rgba(255,255,255,0.7);
-    }
+    .active-url-url {    }
     .active-url-item.www-highlight .active-url-url {
         color: #22c55e;
     }
@@ -473,7 +469,7 @@
 <div class="dash">
     <div>
         <div class="top-stats">
-            <div class="mini"><div><%:Internet Status%></div><div id="internet-status" class="top-stat-value" style="color:#22c55e;font-weight:600;"></div></div>
+            <div class="mini"><div><%:Internet Status%></div><div id="internet-status" class="top-stat-value" style="font-weight:600;"></div></div>
             <div class="mini"><div><%:Online App%></div><div id="app-count" class="top-stat-value">0</div></div>
             <div class="mini"><div><%:Online User%></div><div id="mini-online" class="top-stat-value">0</div></div>
             <div class="mini"><div><%:Connections%></div><div id="mini-conn" class="top-stat-value">0</div></div>
@@ -486,9 +482,9 @@
             <div class="card full">
                 <h3 id="traffic-title"><%:Traffic Statistics%></h3>
                 <div id="line-wan" class="chart-container"></div>
-                <div id="wan-realtime-rate" style="text-align: center; margin-top: 8px; font-size: 13px; color: #c9d1d9;">
-                    <span style="color: #60a5fa;"><%:Upload%>:</span><span id="wan-up-rate">0 KB/s</span> 
-                    <span style="margin-left: 15px; color: #22c55e;"><%:Download%>:</span><span id="wan-down-rate">0 KB/s</span>
+                <div id="wan-realtime-rate" style="text-align: center; margin-top: 8px; font-size: 13px;">
+                    <span><%:Upload%>:</span><span id="wan-up-rate">0 KB/s</span> 
+                    <span style="margin-left: 15px;"><%:Download%>:</span><span id="wan-down-rate">0 KB/s</span>
                 </div>
             </div>
             <div class="card full" id="active-app-card">
@@ -862,7 +858,7 @@
         }
         var versionStr = '';
         if(sys.openwrt_version && sys.fwx_version) {
-            versionStr = sys.openwrt_version + '(' + sys.fwx_version + ')';
+            versionStr = sys.openwrt_version + '-' + sys.fwx_version;
         } else if(sys.openwrt_version) {
             versionStr = sys.openwrt_version;
         } else if(sys.fwx_version) {
@@ -1014,8 +1010,8 @@
         
         var networkData = {
             work_mode: (net.work_mode !== undefined && net.work_mode !== null) ? net.work_mode : 1,
-            internet: net.internet !== undefined ? net.internet : 1, // 0=已联网、1=未联网、2=未插网线、3=拨号失败
-            isGatewayMode: isGatewayMode, // 保存判断结果
+            internet: net.internet !== undefined ? net.internet : 1,
+            isGatewayMode: isGatewayMode,  
             lan: {
                 ip: net.lan && net.lan.ip || '0.0.0.0',
                 mask: net.lan && net.lan.mask || '255.255.255.0',
@@ -1087,11 +1083,13 @@
         var days = Math.floor(seconds / 86400);
         var hours = Math.floor((seconds % 86400) / 3600);
         var minutes = Math.floor((seconds % 3600) / 60);
+        var secs = seconds % 60;
         var result = [];
-        if(days > 0) result.push(days + _Day);
-        if(hours > 0) result.push(hours + _Hour);
-        if(minutes > 0) result.push(minutes + _Minute);
-        return result.length > 0 ? result.join(' ') : '0' + _Minute;
+        if(days > 0) result.push(days + 'd');
+        if(hours > 0) result.push(hours + 'h');
+        if(minutes > 0) result.push(minutes + 'm');
+        result.push(secs + 's');
+        return result.length > 0 ? result.join(' ') : '0s';
     }
     
     var cpu=18, mem=42;
@@ -1108,8 +1106,27 @@
     var lineWan = echarts.init($('#line-wan')[0]);
     var barUserTraffic = echarts.init($('#bar-user-traffic')[0]);
 
-    var darkText = '#c9d1d9';
-    var axis = { lineStyle:{color:'rgba(255,255,255,0.5)'}, axisLabel:{color:darkText}, axisLine:{lineStyle:{color:'rgba(255,255,255,0.5)'}}, splitLine:{lineStyle:{color:'rgba(255,255,255,0.08)'}} };
+
+    function getCSSVariable(name, defaultValue) {
+        var root = document.documentElement;
+        var value = getComputedStyle(root).getPropertyValue(name).trim();
+        return value || defaultValue;
+    }
+    
+    var darkText = getCSSVariable('--chart-text-color', '#333333');
+    var axisLineColor = getCSSVariable('--chart-axis-line-color', 'rgba(0,0,0,0.2)');
+    var axisLabelColor = getCSSVariable('--chart-axis-label-color', '#666666');
+    var splitLineColor = getCSSVariable('--chart-split-line-color', 'rgba(0,0,0,0.08)');
+    var splitLineDashedColor = getCSSVariable('--chart-split-line-dashed-color', 'rgba(0,0,0,0.15)');
+    var tooltipBg = getCSSVariable('--chart-tooltip-bg', 'rgba(255,255,255,0.95)');
+    var tooltipText = getCSSVariable('--chart-tooltip-text', '#333333');
+    
+    var axis = { 
+        lineStyle:{color:axisLineColor}, 
+        axisLabel:{color:axisLabelColor}, 
+        axisLine:{lineStyle:{color:axisLineColor}}, 
+        splitLine:{lineStyle:{color:splitLineColor}} 
+    };
     var palette = [
     '#34d399',  
         '#a78bfa',  // violet-400 
@@ -1136,10 +1153,11 @@
     pieApp.setOption({
         backgroundColor: 'transparent',
         color: palette,
-        textStyle:{ color: darkText },
+        textStyle:{ color: axisLabelColor },
         tooltip:{
             trigger:'item', 
-            backgroundColor:'rgba(60,60,60,0.9)',
+            backgroundColor: tooltipBg,
+            textStyle: { color: tooltipText },
             formatter: function(params) {
                 var name = params.name || '未知';
                 var value = params.value || 0;
@@ -1155,7 +1173,7 @@
                 return name + '<br/>' + timeStr + ' (' + percent.toFixed(1) + '%)';
             }
         },
-        legend:{bottom:0, textStyle:{color:darkText}},
+        legend:{bottom:0, textStyle:{color:axisLabelColor}},
         grid: {
             top: '5%', 
             bottom: '10%'
@@ -1288,11 +1306,12 @@
     barUserTraffic.setOption({
         backgroundColor: 'transparent',
         color: ['#60a5fa', '#10b981'], 
-        textStyle: { color: darkText },
+        textStyle: { color: axisLabelColor },
         tooltip: {
             trigger: 'item', 
             axisPointer: { type: 'shadow' },
-            backgroundColor: 'rgba(60,60,60,0.9)', 
+            backgroundColor: tooltipBg,
+            textStyle: { color: tooltipText }, 
             formatter: function(params) {
                 if (params.seriesName !== '下行') {
                     return '';
@@ -1319,7 +1338,7 @@
         legend: {
             show: true,
             bottom: 0,
-            textStyle: { color: darkText },
+            textStyle: { color: axisLabelColor },
             data: [_Upstream, _Downstream]
         },
         grid: {
@@ -1334,7 +1353,7 @@
             position: 'bottom',
             min: 0,  
             axisLabel: {
-                color: darkText,
+                color: axisLabelColor,
                 fontSize: 10,
                 formatter: function(value) {
                     return formatTraffic(value);
@@ -1342,7 +1361,7 @@
             },
             axisLine: {
                 show: true,
-                lineStyle: { color: 'rgba(255,255,255,0.5)' } 
+                lineStyle: { color: axisLineColor } 
             },
             splitLine: {
                 show: false  
@@ -1355,7 +1374,7 @@
                 position: 'left',
                 boundaryGap: false,  
                 axisLabel: {
-                    color: darkText,
+                    color: axisLabelColor,
                     fontSize: 12,
                     fontWeight: 'bold',
                     formatter: function(value, index) {
@@ -1364,7 +1383,7 @@
                 },
                 axisLine: {
                     show: true,
-                    lineStyle: { color: 'rgba(255,255,255,0.5)' } 
+                    lineStyle: { color: axisLineColor } 
                 },
                 splitLine: {
                     show: false  
@@ -1408,7 +1427,7 @@
                 label: {
                     show: true, 
                     position: 'right',  
-                    color: darkText,
+                    color: axisLabelColor,
                     fontSize: 11,
                     formatter: function(params) {
                         if (params.seriesName === _Downstream) {
@@ -1663,12 +1682,17 @@
     lineWan.setOption({
         backgroundColor: 'transparent',
         color: ['#60a5fa', '#22c55e'],  // 蓝色=上行，绿色=下行（与图片一致）
-        textStyle:{ color: darkText },
+        textStyle:{ color: axisLabelColor },
         animation: false,  // 禁用初始动画
         animationDurationUpdate: 0,  // 更新时无动画延迟，实现平滑平移
-        tooltip:{ trigger:'axis', backgroundColor:'rgba(60,60,60,0.9)', formatter:function(p){
-            return _Upstream + ': '+bytes(p[0].data)+'<br/>'+_Downstream + ': '+bytes(p[1].data);
-        }},
+        tooltip:{ 
+            trigger:'axis', 
+            backgroundColor: tooltipBg,
+            textStyle: { color: tooltipText },
+            formatter:function(p){
+                return _Upstream + ': '+bytes(p[0].data)+'<br/>'+_Downstream + ': '+bytes(p[1].data);
+            }
+        },
         grid: {
             left: '8%',  // 增加左边距，确保Y轴刻度数字完整显示
             right: '3%',  // 减少右边距
@@ -1680,7 +1704,7 @@
             type:'category', 
             data:x, 
             boundaryGap:false, 
-            axisLabel:{show:false, color:darkText}, 
+            axisLabel:{show:false, color:axisLabelColor}, 
             axisLine:axis.axisLine, 
             splitLine:axis.splitLine 
         },
@@ -1701,14 +1725,14 @@
                     }
                     return Math.round(v) + ' B/s';
                 }, 
-                color:darkText 
+                color:axisLabelColor 
             }, 
             axisLine:axis.axisLine, 
             splitLine: {
                 show: true,
                 lineStyle: {
                     type: 'dashed', 
-                    color: 'rgba(255,255,255,0.30)',
+                    color: splitLineDashedColor,
                     width: 1
                 }
             }
@@ -1737,7 +1761,7 @@
                 data:down 
             }
         ],
-        legend:{ top:0, textStyle:{color:darkText} }
+        legend:{ top:0, textStyle:{color:axisLabelColor} }
     });
 
     if(typeof up === 'undefined' || up.length === 0){
@@ -2212,6 +2236,7 @@
         }
         
         if(newHosts.length > 0) {
+            $container.find('.no-data').remove();
             startHostRendering(newHosts);
         }
     }
@@ -2410,7 +2435,7 @@
                     label: {
                         show: true,  
                         position: 'right', 
-                        color: darkText,
+                        color: axisLabelColor,
                         fontSize: 11,
                         formatter: function(params) {
                             if (params.data.user) {

@@ -637,9 +637,9 @@
 	</div>
 </div>
 <div id="detailsModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 10000; justify-content: center; align-items: center;">
-    <div class="modal-content" style="background-color: #2d2d2d; color: #ffffff; padding: 20px; border-radius: 5px; width: 750px; height: 500px; max-height: 90vh; overflow-y: auto; position: relative;">
-        <button type="button" onclick="closeModal('detailsModal')" class="modal-close" style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: #fff; font-size: 24px; cursor: pointer; padding: 0; width: 30px; height: 30px; line-height: 30px;">&times;</button>
-        <h4 style="margin: 0 0 20px 0; color: #fff;"><%:Terminal Detail%></h4>
+    <div class="modal-content" style="background: var(--background-color-high, #ffffff); color: var(--text-color-high, #333); padding: 20px; border-radius: 5px; width: 750px; height: 500px; max-height: 90vh; overflow-y: auto; position: relative; border: 1px solid var(--border-color-low, #e5e7eb);">
+        <button type="button" onclick="closeModal('detailsModal')" class="modal-close" style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: var(--text-color-high, #333); font-size: 24px; cursor: pointer; padding: 0; width: 30px; height: 30px; line-height: 30px;">&times;</button>
+        <h4 style="margin: 0 0 20px 0; color: inherit;"><%:Terminal Detail%></h4>
         
         <ul class="tab-list">
             <li class="tab-item active" onclick="showTabContent('tab2')"><%:App Statistics%></li>
@@ -688,12 +688,12 @@
 </div>
 
 <div id="nicknameModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 10000; justify-content: center; align-items: center;">
-    <div class="modal-content" style="background-color: #2d2d2d; color: #ffffff; padding: 20px; border-radius: 5px; width: 400px; position: relative;">
-        <button type="button" onclick="closeModal('nicknameModal')" class="modal-close" style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: #fff; font-size: 24px; cursor: pointer; padding: 0; width: 30px; height: 30px; line-height: 30px;">&times;</button>
-        <h4 style="margin: 0 0 20px 0; color: #fff;"><%:Edit Remark%></h4>
+    <div class="modal-content" style="background: var(--background-color-high, #ffffff); color: var(--text-color-high, #333); padding: 20px; border-radius: 5px; width: 400px; position: relative; border: 1px solid var(--border-color-low, #e5e7eb);">
+        <button type="button" onclick="closeModal('nicknameModal')" class="modal-close" style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: var(--text-color-high, #333); font-size: 24px; cursor: pointer; padding: 0; width: 30px; height: 30px; line-height: 30px;">&times;</button>
+        <h4 style="margin: 0 0 20px 0; color: inherit;"><%:Edit Remark%></h4>
         <p style="margin-bottom: 10px;"><span class="field-label"><%:MAC Address%>:</span> <span id="nicknameMacDisplay">--</span></p>
         <input type="hidden" id="nicknameMac" value="">
-        <p style="margin-bottom: 10px;"><span class="field-label"><%:Remark%>:</span> <input type="text" id="nicknameInput" style="padding: 5px; background-color: #1e1e1e; color: #ffffff; border: 1px solid #555; width: 200px"></p>
+        <p style="margin-bottom: 10px;"><span class="field-label"><%:Remark%>:</span> <input type="text" id="nicknameInput" style="padding: 5px; background: inherit; color: inherit; border: 1px solid var(--border-color-medium, #d1d5db); width: 200px; border-radius: 4px;"></p>
         <div style="display: flex; justify-content: flex-end;">
 			<button type="button" class="cbi-button cbi-button-add" onclick="closeModal('nicknameModal')"><%:Cancel%></button>
             <button type="button" class="cbi-button cbi-button-add" onclick="submitNicknameChange()" style="margin-right: 10px;"><%:Confirm%></button>
@@ -715,29 +715,29 @@
         list-style-type: none;
         padding: 0;
         margin: 0;
-        border-bottom: 1px solid rgba(255,255,255,0.1);
+        border-bottom: 1px solid var(--border-color-medium, #d1d5db);
     }
     .tab-item {
         padding: 8px 16px;
         cursor: pointer;
-        border: 1px solid rgba(255,255,255,0.1);
+        border: 1px solid var(--border-color-medium, #d1d5db);
         border-bottom: none;
-        background-color: rgba(255,255,255,0.05);
+        background-color: var(--background-color-low, #f5f5f5);
         border-radius: 5px 5px 0 0;
         margin-right: 6px;
         transition: all 0.2s ease;
-        color: rgba(255,255,255,0.7);
+        color: var(--text-color-medium, #6b7280);
         font-size: 13px;
     }
     .tab-item.active {
         font-weight: 600;
-		background-color: rgba(59, 130, 246, 0.3);
-        border-color: rgba(59, 130, 246, 0.5);
-        color: #60a5fa;
+		background-color: var(--background-color-high, #ffffff);
+        border-color: var(--border-color-medium, #d1d5db);
+        color: var(--text-color-high, #333);
     }
     .tab-item:hover {
-        background-color: rgba(255,255,255,0.1);
-        color: rgba(255,255,255,0.9);
+        background-color: var(--background-color-medium, #eeeeee);
+        color: var(--text-color-high, #333);
     }
 
 	.tab-body {

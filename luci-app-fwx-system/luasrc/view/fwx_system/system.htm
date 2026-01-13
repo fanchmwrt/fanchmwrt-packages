@@ -2,7 +2,6 @@
 <link rel="stylesheet" href="<%=resource%>/css/common.css">
 <script src="<%=resource%>/jquery-3.7.1.min.js"></script>
 <script src="<%=resource%>/common.js"></script>
-<%+fwx_network/common_style%>
 <div class="fwx-form-card">
   <div class="form-title"><%:System Configuration%></div>
   <div class="form-desc"><%:Configure system settings%></div>
@@ -10,13 +9,28 @@
   <div class="form-row">
     <label class="form-label"><%:LAN Interface%></label>
     <div style="flex: 1;">
-      <input id="lan-ifname" type="text" placeholder="br-lan">
+      <input id="lan-ifname" type="text" placeholder="br-lan" class="input-short">
       <div class="error-msg" id="lan-ifname-error" style="display:none; color:#f87171; font-size:12px; margin-top:4px;"></div>
     </div>
   </div>
 
   <div class="form-desc" style="margin-top: -10px; margin-bottom: 20px;">
     <span><%:LAN interface name for terminal detection. Default is bridge interface (br-lan). If LAN port is changed to physical interface, please modify to the corresponding name, such as eth0.%></span>
+  </div>
+
+  <div class="form-row">
+    <label class="form-label"><%:Theme Mode%></label>
+    <div style="flex: 1;">
+      <select id="theme-mode" class="input-short">
+        <option value="0"><%:Light%></option>
+        <option value="1"><%:Dark%></option>
+      </select>
+      <div class="error-msg" id="theme-mode-error" style="display:none; color:#f87171; font-size:12px; margin-top:4px;"></div>
+    </div>
+  </div>
+
+  <div class="form-desc" style="margin-top: -10px; margin-bottom: 20px;">
+    <span><%:Set fanchmwrt theme mode%></span>
   </div>
 
   <div class="form-row" style="justify-content:flex-end; gap:8px;">
@@ -69,7 +83,9 @@
       const d = (resp && resp.data) || {};
       const fwx = d.fwx || {};
       const lanIfname = fwx.lan_ifname || 'br-lan';
+      const themeMode = fwx.theme_mode !== undefined ? fwx.theme_mode : 0;
       $('#lan-ifname').val(lanIfname);
+      $('#theme-mode').val(themeMode.toString());
       $('#system-tip').text('');
     }).fail(function(){
       $('#system-tip').text(_LoadFailed);
@@ -78,6 +94,7 @@
 
   function save() {
     const lanIfname = $('#lan-ifname').val().trim();
+    const themeMode = $('#theme-mode').val();
     
     if (!validateLanIfname(lanIfname)) {
       showError('lan-ifname', _InvalidLANInterface);
@@ -86,7 +103,10 @@
     
     clearError('lan-ifname');
     
-    const payload = { lan_ifname: lanIfname };
+    const payload = { 
+      lan_ifname: lanIfname,
+      theme_mode: themeMode
+    };
     $('#system-save').prop('disabled', true);
     $.ajax({
       url: apiSet,
@@ -95,6 +115,10 @@
     }).done(function(resp){
       if (resp && (resp.code === 0 || resp.code === 2000)) {
         showModal(_SavedSuccessfully, true);
+        // 保存成功后刷新页面以应用主题模式
+        setTimeout(function() {
+          location.reload();
+        }, 1500);
       } else {
         showModal(_SaveFailed, false);
       }

@@ -968,8 +968,8 @@
 			<a href="<%=url("admin/fwx_user/list")%>" class="cbi-button cbi-button-back"><%:Back to User List%></a>
 		</div>
 		
-		<div style="background-color: #2d2d2d; color: #ffffff; padding: 20px; border-radius: 5px;">
-			<h4 style="margin: 0 0 20px 0; color: #fff;"><%:User Detail%>(<span id="device-title-mac">--</span>)</h4>
+		<div style="padding: 20px; border-radius: 5px; background: inherit; color: inherit;">
+			<h4 style="margin: 0 0 20px 0; color: inherit;"><%:User Detail%>(<span id="device-title-mac">--</span>)</h4>
 			
 			<ul class="tab-list">
 				<li class="tab-item active" onclick="showTabContent('tab1')"><%:Basic Info%></li>
@@ -1094,26 +1094,26 @@
 		list-style-type: none;
 		padding: 0;
 		margin: 0;
-		border-bottom: 1px solid #444;
+		border-bottom: 1px solid var(--border-color-medium, #d1d5db);
 	}
 	.tab-item {
 		padding: 3px 16px;
 		cursor: pointer;
-		border: 1px solid #444;
+		border: 1px solid var(--border-color-medium, #d1d5db);
 		border-bottom: none;
-		background-color: #1e1e1e;
+		background-color: var(--background-color-low, #f5f5f5);
 		border-radius: 5px 5px 0 0;
 		margin-right: 6px;
 		transition: background-color 0.3s ease;
-		color: #ccc;
+		color: var(--text-color-medium, #6b7280);
 	}
 	.tab-item.active {
 		font-weight: bold;
-		background-color: #2d2d2d;
-		color: #fff;
+		background-color: var(--background-color-high, #ffffff);
+		color: var(--text-color-high, #333);
 	}
 	.tab-item:hover {
-		background-color: #333;
+		background-color: var(--background-color-medium, #eeeeee);
 	}
 
 	.tab-body {
