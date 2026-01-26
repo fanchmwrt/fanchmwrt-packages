@@ -95,8 +95,8 @@
 		var todayOnlineTime = user.today_online_time || 0;
 		document.getElementById('basic_info_online_time').textContent = get_display_time(todayOnlineTime);
 		
-		var todayOnlineDuration = user.today_online_duration || 0;
-		document.getElementById('basic_info_online_duration').textContent = get_display_time(todayOnlineDuration);
+		var todayActiveTime = user.today_active_time || 0;
+		document.getElementById('basic_info_active_time').textContent = get_display_time(todayActiveTime);
 		
 		var statusElement = document.getElementById('basic_info_status');
 		if (user.online == 1) {
@@ -998,12 +998,12 @@
 						<tr class="tr">
 							<td class="td" style="font-weight: bold;"><%:Today Traffic%></td>
 							<td class="td" id="basic_info_traffic" style="cursor: help;">--</td>
-							<td class="td" style="font-weight: bold;"><%:Today Internet Duration%></td>
+							<td class="td" style="font-weight: bold;"><%:Today Online Duration%></td>
 							<td class="td" id="basic_info_online_time">--</td>
 						</tr>
 						<tr class="tr">
-							<td class="td" style="font-weight: bold;"><%:Today Online Duration%></td>
-							<td class="td" id="basic_info_online_duration">--</td>
+							<td class="td" style="font-weight: bold;"><%:Today Internet Duration%></td>
+							<td class="td" id="basic_info_active_time">--</td>
 							<td class="td" style="font-weight: bold;"><%:Online Status%></td>
 							<td class="td" id="basic_info_status">--</td>
 						</tr>

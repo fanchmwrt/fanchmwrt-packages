@@ -1776,10 +1776,10 @@ $(document).ready(function() {
         
         var $selectedCount = $categorySection.find('.category-header-right .category-count');
         if ($selectedCount.length === 0) {
-            $selectedCount = $('<span>').addClass('category-count').text('Selected: ' + selectedCount);
+            $selectedCount = $('<span>').addClass('category-count').text(_Selected + ': ' + selectedCount);
             $categorySection.find('.category-header-right').append($selectedCount);
         } else {
-            $selectedCount.text('Selected: ' + selectedCount);
+            $selectedCount.text(_Selected + ': ' + selectedCount);
         }
     }
     

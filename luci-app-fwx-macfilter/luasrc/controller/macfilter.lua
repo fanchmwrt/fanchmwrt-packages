@@ -264,8 +264,8 @@ function get_mac_filter_rules()
 	
 	
 	
-	if resp_obj and resp_obj.code == 2000 and resp_obj.data and resp_obj.data.data then
-		local rules_data = resp_obj.data.data
+	if resp_obj and resp_obj.code == 2000 and resp_obj.data and resp_obj.data.list then
+		local rules_data = resp_obj.data.list
 		local json_str = json.stringify({code = 0, data = rules_data, message = "success"})
 		luci.http.write(json_str)
 	else
