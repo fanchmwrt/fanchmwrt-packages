@@ -91,8 +91,8 @@ msgstr "主机名"
 msgid "Device Model"
 msgstr "设备型号"
 
-msgid "CPU"
-msgstr "CPU"
+msgid "Target Platform"
+msgstr "目标平台"
 
 msgid "Firmware Version"
 msgstr "固件版本"
