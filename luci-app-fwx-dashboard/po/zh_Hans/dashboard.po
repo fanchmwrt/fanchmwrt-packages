@@ -240,3 +240,5 @@ msgstr "应用中心"
 
 msgid "System Monitor"
 msgstr "系统监控"
+msgid "Tip: Click here to switch modes."
+msgstr "提示：点击这里可以切换模式。"

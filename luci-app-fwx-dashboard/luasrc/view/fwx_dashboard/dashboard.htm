@@ -66,6 +66,43 @@
         position: relative;
         display: inline-block;
     }
+    .mode-switch-guide-bubble {
+        position: fixed;
+        z-index: 9999;
+        max-width: 260px;
+        padding: 8px 10px;
+        border-radius: 8px;
+        border: 1px solid rgba(37, 99, 235, 0.35);
+        background: rgba(239, 246, 255, 0.98);
+        color: #1d4ed8;
+        font-size: 12px;
+        line-height: 1.45;
+        box-shadow: 0 6px 16px rgba(29, 78, 216, 0.16);
+        pointer-events: none;
+    }
+    .mode-switch-guide-bubble::before {
+        content: "";
+        position: absolute;
+        top: -6px;
+        right: 14px;
+        width: 10px;
+        height: 10px;
+        background: rgba(239, 246, 255, 0.98);
+        border-left: 1px solid rgba(37, 99, 235, 0.35);
+        border-top: 1px solid rgba(37, 99, 235, 0.35);
+        transform: rotate(45deg);
+    }
+    [data-darkmode="true"] .mode-switch-guide-bubble {
+        border-color: rgba(147, 197, 253, 0.45);
+        background: rgba(30, 41, 59, 0.98);
+        color: #bfdbfe;
+        box-shadow: 0 6px 16px rgba(2, 6, 23, 0.45);
+    }
+    [data-darkmode="true"] .mode-switch-guide-bubble::before {
+        background: rgba(30, 41, 59, 0.98);
+        border-left-color: rgba(147, 197, 253, 0.45);
+        border-top-color: rgba(147, 197, 253, 0.45);
+    }
     .app-stats-select-wrap {
         display: none !important;
     }
@@ -1304,6 +1341,12 @@
     var _DestinationPort = '<%:Destination Port%>';
     var _MatchedDomain = '<%:Matched Domain%>';
     var _IPAddress = '<%:IP Address%>';
+    var _SwitchModeGuide = '<%:Tip: Click here to switch modes.%>';
+    var shouldShowModeSwitchGuide = false;
+    var modeSwitchGuideDismissed = false;
+    var initStatusFetched = false;
+    var modeSwitchGuideRetryCount = 0;
+    var MODE_SWITCH_GUIDE_MAX_RETRY = 20;
     
     function pct(v){ return Math.max(0, Math.min(100, Math.round(v))); }
     function clamp(v, min, max){ return Math.max(min, Math.min(max, v)); }
@@ -1400,6 +1443,25 @@
                 } catch(e) {
                     console.error('Failed to parse dashboard data:', e);
                 }
+            }
+        });
+    }
+
+    function fetchInitStatusOnce(){
+        if (initStatusFetched) {
+            return;
+        }
+        initStatusFetched = true;
+        new XHR().get('<%=url("admin/dashboard_api/get_init_status")%>', null, function(x, data){
+            if(!data){
+                return;
+            }
+            try {
+                var json = typeof data === 'string' ? JSON.parse(data) : data;
+                shouldShowModeSwitchGuide = parseInt(json.init_status, 10) === 0;
+                updateModeSwitchGuide();
+            } catch(e) {
+                console.error('Failed to parse init status data:', e);
             }
         });
     }
@@ -1625,8 +1687,79 @@
         return sys.openwrt_version;
     }
 
+    function formatReleaseTypeSuffix(sys) {
+        var releaseType = parseInt(sys.release_type, 10);
+        if (releaseType === 1) {
+            return '(alpha)';
+        }
+        if (releaseType === 2) {
+            return '(beta)';
+        }
+        return '';
+    }
+
     function isX86Arch(arch) {
         return arch === 'x86-64' || arch === 'x86_64';
+    }
+
+    function removeModeSwitchGuideBubble() {
+        $('#mode-switch-guide-bubble').remove();
+        $(window).off('resize.mode_guide scroll.mode_guide');
+        $(document).off('click.mode_guide');
+    }
+
+    function positionModeSwitchGuideBubble() {
+        var $btn = $('.top-mode-menu .top-more-button');
+        var $bubble = $('#mode-switch-guide-bubble');
+        if (!$btn.length || !$bubble.length) {
+            return false;
+        }
+        var rect = $btn[0].getBoundingClientRect();
+        var bubbleWidth = $bubble.outerWidth() || 220;
+        var left = rect.left + rect.width - bubbleWidth;
+        if (left < 8) {
+            left = 8;
+        }
+        var top = rect.bottom + 10;
+        $bubble.css({
+            left: left + 'px',
+            top: top + 'px'
+        });
+        return true;
+    }
+
+    function updateModeSwitchGuide() {
+        if (!(shouldShowModeSwitchGuide && !modeSwitchGuideDismissed)) {
+            removeModeSwitchGuideBubble();
+            modeSwitchGuideRetryCount = 0;
+            return;
+        }
+
+        var $bubble = $('#mode-switch-guide-bubble');
+        if (!$bubble.length) {
+            $bubble = $('<div id="mode-switch-guide-bubble" class="mode-switch-guide-bubble"></div>').text(_SwitchModeGuide);
+            $('body').append($bubble);
+        }
+
+        if (!positionModeSwitchGuideBubble()) {
+            if (modeSwitchGuideRetryCount < MODE_SWITCH_GUIDE_MAX_RETRY) {
+                modeSwitchGuideRetryCount++;
+                setTimeout(function() {
+                    updateModeSwitchGuide();
+                }, 300);
+            }
+            return;
+        }
+        modeSwitchGuideRetryCount = 0;
+
+        $(window).off('resize.mode_guide scroll.mode_guide').on('resize.mode_guide scroll.mode_guide', function() {
+            positionModeSwitchGuideBubble();
+        });
+
+        $(document).off('click.mode_guide').on('click.mode_guide', '.top-mode-menu .top-more-button, .top-mode-menu .mode-item a', function() {
+            modeSwitchGuideDismissed = true;
+            removeModeSwitchGuideBubble();
+        });
     }
     
     function updateDashboardData(data){
@@ -1663,6 +1796,9 @@
             versionStr = sys.fwx_version;
         } else {
             versionStr = '--';
+        }
+        if (versionStr !== '--') {
+            versionStr += formatReleaseTypeSuffix(sys);
         }
         $('#sys-version').text(versionStr).attr('title', versionStr);
         if(sys.kernel_version) {
@@ -2067,7 +2203,8 @@
             '<div id="app-stats-switch-menu" class="app-stats-switch-menu">' +
             '<button type="button" class="app-stats-switch-item" data-type="hourly">近一小时</button>' +
             '<button type="button" class="app-stats-switch-item active" data-type="daily">今日</button>' +
-            '</div></span>');
+            '</div>' +
+            '</span>');
 
         $native.closest('.app-stats-select-wrap').after($switch);
 
@@ -2102,6 +2239,7 @@
     fetchDashboardData();
     fetchAllAppTypeStats();
     initAppStatsCustomSwitch();
+    fetchInitStatusOnce();
  
     setInterval(function(){
         fetchDashboardCommon();
