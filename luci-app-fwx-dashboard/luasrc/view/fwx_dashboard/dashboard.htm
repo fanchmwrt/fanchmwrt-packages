@@ -1299,7 +1299,7 @@
     var _SystemInfo = '<%:System Info%>';
     var _Hostname = '<%:Hostname%>';
     var _DeviceModel = '<%:Device Model%>';
-    var _CPU = '<%:CPU%>';
+    var _CPU = 'CPU';
     var _FirmwareVersion = '<%:Firmware Version%>';
     var _KernelVersion = '<%:Kernel Version%>';
     var _Uptime = '<%:Uptime%>';
@@ -1341,6 +1341,7 @@
     var _DestinationPort = '<%:Destination Port%>';
     var _MatchedDomain = '<%:Matched Domain%>';
     var _IPAddress = '<%:IP Address%>';
+    var _Expanded = '<%:Expanded%>';
     var _SwitchModeGuide = '<%:Tip: Click here to switch modes.%>';
     var shouldShowModeSwitchGuide = false;
     var modeSwitchGuideDismissed = false;
@@ -1671,11 +1672,15 @@
         var cpuModel = formatEmptyValue(sys.cpu_model_name);
         var kernelVersion = formatEmptyValue(sys.kernel_version);
         var model = formatEmptyValue(sys.model);
+        var tooltipVersionStr = versionStr;
+        if (tooltipVersionStr && tooltipVersionStr !== '--' && parseInt(sys.expand_root, 10) === 1) {
+            tooltipVersionStr += ' (' + _Expanded + ')';
+        }
         var html = '<div class="tooltip-row"><span class="tooltip-label">' + _Hostname + ':</span><span class="tooltip-value">' + hostname + '</span></div>' +
                    '<div class="tooltip-row"><span class="tooltip-label">' + _CPU + ':</span><span class="tooltip-value">' + cpuModel + '</span></div>' +
                    '<div class="tooltip-row"><span class="tooltip-label">' + _KernelVersion + ':</span><span class="tooltip-value">' + kernelVersion + '</span></div>' +
                    '<div class="tooltip-row"><span class="tooltip-label">' + _DeviceModel + ':</span><span class="tooltip-value">' + model + '</span></div>' +
-                   '<div class="tooltip-row"><span class="tooltip-label">' + _FirmwareVersion + ':</span><span class="tooltip-value">' + formatEmptyValue(versionStr) + '</span></div>' +
+                   '<div class="tooltip-row"><span class="tooltip-label">' + _FirmwareVersion + ':</span><span class="tooltip-value">' + formatEmptyValue(tooltipVersionStr) + '</span></div>' +
                    '<div class="tooltip-row"><span class="tooltip-label">' + _Uptime + ':</span><span class="tooltip-value">' + formatEmptyValue(uptimeStr) + '</span></div>';
         $('#sysinfo-tooltip').html(html);
     }
