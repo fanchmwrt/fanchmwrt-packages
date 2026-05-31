@@ -1,0 +1,1792 @@
+<%+header%>
+<link rel="stylesheet" href="<%=resource%>/css/common.css">
+<script src="<%=resource%>/jquery-3.7.1.min.js"></script>
+<script src="<%=resource%>/common.js"></script>
+<style>
+.app-center-outer {
+    max-width: 1200px !important;
+    width: calc(100% - 16px);
+    margin: 0 auto 16px auto;
+    padding: 16px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: transparent;
+    box-sizing: border-box;
+}
+[data-darkmode="true"] .app-center-outer {
+    border-color: rgba(255, 255, 255, 0.16);
+}
+@media (max-width: 900px) {
+    .app-center-outer {
+        width: calc(100% - 12px);
+        padding: 12px;
+        margin: 0 auto 12px auto;
+    }
+}
+.app-center-wrap { padding: 0; }
+.app-center-intro { margin-bottom: 10px; }
+.app-center-intro-title {
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.35;
+    color: var(--text-color-highest, #111);
+}
+.app-center-intro-desc {
+    margin-top: 4px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text-color-medium, #6b7280);
+}
+[data-darkmode="true"] .app-center-intro-title {
+    color: rgba(255, 255, 255, 0.95);
+}
+[data-darkmode="true"] .app-center-intro-desc {
+    color: rgba(255, 255, 255, 0.74);
+}
+.app-center-toolbar { display: flex; justify-content: flex-start; margin-bottom: 10px; }
+.app-center-refresh-btn {
+    border: 1px solid rgba(25, 118, 210, 0.45);
+    border-radius: 999px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.25;
+    cursor: pointer;
+    background: rgba(25, 118, 210, 0.10);
+    color: var(--primary-color-high, #1976d2);
+    transition: background 0.2s, border-color 0.2s, opacity 0.2s;
+}
+.app-center-refresh-btn:hover {
+    background: rgba(25, 118, 210, 0.16);
+    border-color: rgba(25, 118, 210, 0.68);
+    color: var(--primary-color-low, #0d46a1);
+}
+.app-center-refresh-btn:active {
+    background: rgba(25, 118, 210, 0.22);
+    border-color: rgba(25, 118, 210, 0.78);
+}
+.app-center-refresh-btn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+[data-darkmode="true"] .app-center-refresh-btn {
+    background: rgba(59, 130, 246, 0.18);
+    border-color: rgba(96, 165, 250, 0.62);
+    color: #fff;
+}
+[data-darkmode="true"] .app-center-refresh-btn:hover {
+    background: rgba(59, 130, 246, 0.26);
+    border-color: rgba(147, 197, 253, 0.82);
+}
+.app-center-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 380px));
+    gap: 7px;
+}
+.app-center-card {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    min-height: 102px;
+    padding: 14px 14px;
+    margin: 0;
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.12) !important;
+    background: #ffffff !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+    max-width: 100%;
+    transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+.app-center-card-tag-corner {
+    position: absolute;
+    top: 0;
+    right: 0;
+    max-width: 45%;
+    padding: 2px 10px 3px;
+    border-radius: 0 8px 0 8px;
+    background: rgba(25, 118, 210, 0.16);
+    color: var(--primary-color-low, #0d46a1);
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.35;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    pointer-events: none;
+}
+[data-darkmode="true"] .app-center-card-tag-corner {
+    background: rgba(59, 130, 246, 0.24);
+    color: #fff;
+}
+.app-center-card:hover {
+    background: #f5f7fa !important;
+    border-color: rgba(0, 0, 0, 0.18) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+}
+[data-darkmode="true"] .app-center-card {
+    background: #2d2d2d !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+}
+[data-darkmode="true"] .app-center-card:hover {
+    background: #383838 !important;
+    border-color: rgba(255, 255, 255, 0.25) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+}
+.app-center-logo {
+    width: 60px;
+    height: 60px;
+    min-width: 60px;
+    align-self: center;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 600;
+    color: #fff;
+    overflow: hidden;
+    position: relative;
+}
+.app-center-logo-img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+}
+.app-center-logo-fallback {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.app-center-logo-fallback.is-hidden {
+    display: none;
+}
+.app-center-body {
+    flex: 1;
+    min-width: 0;
+    margin-left: 16px;
+    margin-right: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+.app-center-name { font-size: 16px; font-weight: 600; line-height: 1.35; color: var(--text-color-highest, #111); flex-shrink: 0; display: flex; align-items: center; flex-wrap: wrap; }
+.app-center-boot-hint {
+    margin-left: 8px;
+    color: #d93025;
+    font-size: 12px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+}
+.app-center-boot-help {
+    width: 14px;
+    height: 14px;
+    margin-left: 4px;
+    border: 1px solid currentColor;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    line-height: 1;
+    cursor: help;
+    user-select: none;
+}
+.app-center-desc {
+    font-size: 13px;
+    color: var(--text-color-medium, #6b7280);
+    line-height: 1.45;
+    height: 2.9em;
+    min-height: 2.9em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    flex-shrink: 0;
+}
+.app-center-version {
+    font-size: 12px;
+    color: var(--text-color-low, #9ca3af);
+    margin-top: auto;
+    padding-top: 4px;
+    flex-shrink: 0;
+}
+.app-center-actions { flex-shrink: 0; align-self: center; }
+.app-center-btn {
+    padding: 9px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.app-center-btn-install {
+    border: 1px solid rgba(25, 118, 210, 0.45);
+    background: rgba(25, 118, 210, 0.10);
+    color: var(--primary-color-high, #1976d2);
+    font-weight: 600;
+}
+.app-center-btn-install:hover {
+    background: rgba(25, 118, 210, 0.16);
+    border-color: rgba(25, 118, 210, 0.68);
+    color: var(--primary-color-low, #0d46a1);
+}
+.app-center-btn-install:active {
+    background: rgba(25, 118, 210, 0.22);
+    border-color: rgba(25, 118, 210, 0.78);
+}
+.app-center-btn-install:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+[data-darkmode="true"] .app-center-btn-install {
+    background: rgba(59, 130, 246, 0.18);
+    border-color: rgba(96, 165, 250, 0.62);
+    color: #fff;
+}
+[data-darkmode="true"] .app-center-btn-install:hover {
+    background: rgba(59, 130, 246, 0.26);
+    border-color: rgba(147, 197, 253, 0.82);
+}
+.app-center-btn-upgrade {
+    background: var(--primary-color-high, #1976d2);
+    color: #fff;
+}
+.app-center-btn-uninstall {
+    background: rgba(0, 0, 0, 0.06);
+    color: var(--text-color-medium, #6b7280);
+}
+[data-darkmode="true"] .app-center-btn-uninstall { background: rgba(255,255,255,0.1); color: var(--text-color-medium); }
+.app-center-loading { text-align: center; padding: 40px; color: var(--text-color-medium, #6b7280); }
+.app-center-empty { text-align: center; padding: 40px; color: var(--text-color-medium, #6b7280); }
+.app-center-sync-modal {
+    width: 320px;
+    max-width: 90vw;
+    min-height: 120px;
+    border-radius: 10px;
+    padding: 18px 16px;
+    background: #fff !important;
+    color: var(--text-color-highest, #111) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-direction: column;
+    text-align: center !important;
+    box-sizing: border-box;
+    gap: 12px;
+}
+[data-darkmode="true"] .app-center-sync-modal {
+    background: #2d2d2d !important;
+    color: #f5f5f5 !important;
+}
+.app-center-sync-spinner {
+    width: 30px;
+    height: 30px;
+    border: 3px solid rgba(25, 118, 210, 0.2);
+    border-top-color: var(--primary-color-high, #1976d2);
+    border-radius: 50%;
+    animation: app-center-sync-spin 0.8s linear infinite;
+}
+[data-darkmode="true"] .app-center-sync-spinner {
+    border-color: rgba(59, 130, 246, 0.2);
+    border-top-color: #3b82f6;
+}
+.app-center-sync-text {
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--text-color-high, #374151);
+}
+[data-darkmode="true"] .app-center-sync-text {
+    color: rgba(255, 255, 255, 0.88);
+}
+.app-center-message-modal {
+    width: min(500px, 88vw) !important;
+    min-height: 150px !important;
+    max-height: none !important;
+    overflow: visible !important;
+    padding: 18px 18px !important;
+    border-radius: 10px !important;
+    white-space: pre-wrap;
+    word-break: break-word;
+    line-height: 1.6;
+    text-align: left !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+    box-sizing: border-box;
+}
+.app-center-message-modal-persistent {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+    gap: 8px;
+    position: relative;
+    padding: 20px 46px 20px 18px !important;
+}
+.app-center-message-text {
+    white-space: pre-wrap;
+    word-break: break-word;
+    margin: 0;
+}
+.app-center-message-close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    border: none;
+    width: 26px;
+    height: 26px;
+    border-radius: 999px;
+    padding: 0;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    background: rgba(0, 0, 0, 0.08);
+    color: var(--text-color-medium, #6b7280);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.app-center-message-close-btn:hover {
+    background: rgba(0, 0, 0, 0.14);
+    color: var(--text-color-high, #374151);
+}
+[data-darkmode="true"] .app-center-message-close-btn {
+    background: rgba(255, 255, 255, 0.14);
+    color: rgba(255, 255, 255, 0.9);
+}
+[data-darkmode="true"] .app-center-message-close-btn:hover {
+    background: rgba(255, 255, 255, 0.22);
+    color: #fff;
+}
+@keyframes app-center-sync-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+.app-center-uninstall-modal {
+    width: 360px;
+    max-width: 92vw;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 18px;
+    background: #fff !important;
+    color: var(--text-color-highest, #111) !important;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: stretch;
+    text-align: left;
+    box-sizing: border-box;
+    gap: 10px;
+}
+[data-darkmode="true"] .app-center-install-open-modal {
+    background: #2d2d2d !important;
+    color: #f5f5f5 !important;
+}
+.app-center-install-open-modal {
+    width: 360px;
+    max-width: 92vw;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 18px;
+    background: #fff !important;
+    color: var(--text-color-highest, #111) !important;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: stretch;
+    text-align: left;
+    box-sizing: border-box;
+    gap: 10px;
+}
+.app-center-install-open-title {
+    font-size: 14px;
+    line-height: 1.5;
+}
+.app-center-install-open-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 6px;
+}
+.app-center-install-open-btn {
+    border: none;
+    border-radius: 4px;
+    padding: 7px 14px;
+    font-size: 13px;
+    cursor: pointer;
+}
+.app-center-install-open-btn-cancel {
+    background: rgba(0, 0, 0, 0.08);
+    color: var(--text-color-medium, #6b7280);
+}
+[data-darkmode="true"] .app-center-install-open-btn-cancel {
+    background: rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.85);
+}
+.app-center-install-open-btn-open {
+    background: var(--primary-color-high, #1976d2);
+    color: #fff;
+}
+[data-darkmode="true"] .app-center-uninstall-modal {
+    background: #2d2d2d !important;
+    color: #f5f5f5 !important;
+}
+.app-center-uninstall-title {
+    font-size: 14px;
+    line-height: 1.5;
+}
+.app-center-uninstall-hint {
+    font-size: 12px;
+    color: var(--text-color-medium, #6b7280);
+}
+[data-darkmode="true"] .app-center-uninstall-hint {
+    color: rgba(255, 255, 255, 0.75);
+}
+.app-center-keep-config-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-color-high, #374151);
+    user-select: none;
+}
+[data-darkmode="true"] .app-center-keep-config-label {
+    color: rgba(255, 255, 255, 0.9);
+}
+.app-center-uninstall-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 6px;
+}
+.app-center-uninstall-btn {
+    border: none;
+    border-radius: 4px;
+    padding: 7px 14px;
+    font-size: 13px;
+    cursor: pointer;
+}
+.app-center-uninstall-btn-cancel {
+    background: rgba(0, 0, 0, 0.08);
+    color: var(--text-color-medium, #6b7280);
+}
+[data-darkmode="true"] .app-center-uninstall-btn-cancel {
+    background: rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.85);
+}
+.app-center-uninstall-btn-confirm {
+    background: var(--primary-color-high, #1976d2);
+    color: #fff;
+}
+.app-center-detail-modal {
+    width: min(800px, 95vw);
+    max-width: 800px;
+    height: auto;
+    max-height: min(600px, 90vh);
+    min-height: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    color: var(--text-color-highest, #111) !important;
+    border-radius: 10px;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+    text-align: left !important;
+    box-sizing: border-box;
+    overflow: hidden;
+    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.24);
+}
+.app-center-detail-modal.has-image {
+    height: min(600px, 90vh);
+}
+.app-center-detail-modal.no-image .app-center-detail-body {
+    flex: 0 1 auto;
+}
+[data-darkmode="true"] .app-center-detail-modal {
+    background: #26282d !important;
+    color: #f5f5f5 !important;
+}
+.app-center-detail-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 16px 20px 12px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+    gap: 10px;
+}
+[data-darkmode="true"] .app-center-detail-header {
+    border-bottom-color: rgba(255, 255, 255, 0.12);
+}
+.app-center-detail-title-wrap {
+    flex: 1;
+    min-width: 0;
+}
+.app-center-detail-title {
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.35;
+    color: var(--text-color-highest, #111);
+    margin: 0;
+    word-break: break-word;
+}
+[data-darkmode="true"] .app-center-detail-title {
+    color: #fff;
+}
+.app-center-detail-subtitle {
+    margin-top: 4px;
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--text-color-medium, #6b7280);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+[data-darkmode="true"] .app-center-detail-subtitle {
+    color: rgba(255, 255, 255, 0.68);
+}
+.app-center-detail-open-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 24px;
+    padding: 0 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(25, 118, 210, 0.45);
+    background: rgba(25, 118, 210, 0.10);
+    color: var(--primary-color-high, #1976d2);
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+}
+.app-center-detail-open-btn:hover {
+    background: rgba(25, 118, 210, 0.16);
+    border-color: rgba(25, 118, 210, 0.68);
+    color: var(--primary-color-low, #0d46a1);
+}
+[data-darkmode="true"] .app-center-detail-open-btn {
+    background: rgba(59, 130, 246, 0.18);
+    border-color: rgba(96, 165, 250, 0.62);
+    color: #fff;
+}
+.app-center-detail-close {
+    border: none;
+    border-radius: 999px;
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    background: rgba(0, 0, 0, 0.06);
+    color: var(--text-color-medium, #6b7280);
+    font-size: 18px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    margin-top: -2px;
+    transition: background 0.2s, color 0.2s;
+}
+.app-center-detail-close:hover {
+    background: rgba(0, 0, 0, 0.1);
+    color: var(--text-color-high, #374151);
+}
+[data-darkmode="true"] .app-center-detail-close {
+    background: rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.85);
+}
+[data-darkmode="true"] .app-center-detail-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+}
+.app-center-detail-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 14px 20px 18px;
+}
+.app-center-detail-body > * {
+    width: 100%;
+    box-sizing: border-box;
+}
+.app-center-detail-section {
+    margin-bottom: 12px;
+    padding: 10px 12px;
+    border: 1px solid rgba(0, 0, 0, 0.07);
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.015);
+}
+[data-darkmode="true"] .app-center-detail-section {
+    border-color: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.03);
+}
+.app-center-detail-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-color-high, #374151);
+    margin-bottom: 7px;
+    text-align: left !important;
+}
+[data-darkmode="true"] .app-center-detail-label {
+    color: rgba(255, 255, 255, 0.88);
+}
+.app-center-detail-desc {
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text-color-medium, #4b5563);
+    white-space: pre-wrap;
+    word-break: break-word;
+    text-align: left !important;
+}
+[data-darkmode="true"] .app-center-detail-desc {
+    color: rgba(255, 255, 255, 0.86);
+}
+.app-center-detail-feature-list {
+    margin: 0;
+    padding-left: 18px;
+    list-style: disc;
+    text-align: left !important;
+}
+.app-center-detail-feature-item {
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text-color-medium, #4b5563);
+    margin-bottom: 4px;
+    text-align: left !important;
+}
+[data-darkmode="true"] .app-center-detail-feature-item {
+    color: rgba(255, 255, 255, 0.86);
+}
+.app-center-detail-empty {
+    font-size: 13px;
+    color: var(--text-color-low, #9ca3af);
+    text-align: left !important;
+}
+[data-darkmode="true"] .app-center-detail-empty {
+    color: rgba(255, 255, 255, 0.6);
+}
+.app-center-detail-gallery {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    background: rgba(0, 0, 0, 0.01);
+}
+[data-darkmode="true"] .app-center-detail-gallery {
+    border-color: rgba(255, 255, 255, 0.12);
+}
+.app-center-detail-carousel-viewport {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    height: auto;
+    overflow: hidden;
+    background: #f3f4f6;
+}
+[data-darkmode="true"] .app-center-detail-carousel-viewport {
+    background: #1f1f1f;
+}
+.app-center-detail-carousel-track {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    transform: translateX(0);
+    transition: transform 0.34s ease;
+    will-change: transform;
+}
+.app-center-detail-carousel-slide {
+    flex: 0 0 100%;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    box-sizing: border-box;
+}
+.app-center-detail-image {
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
+    border-radius: 0;
+}
+.app-center-detail-carousel-dots {
+    position: absolute;
+    left: 50%;
+    bottom: 12px;
+    transform: translateX(-50%);
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: rgba(17, 24, 39, 0.28);
+    backdrop-filter: blur(4px);
+}
+.app-center-detail-carousel-dot {
+    border: none;
+    border-radius: 999px;
+    width: 8px;
+    height: 8px;
+    padding: 0;
+    background: rgba(107, 114, 128, 0.32);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.app-center-detail-carousel-dot.is-active {
+    width: 20px;
+    background: var(--primary-color-high, #1976d2);
+}
+[data-darkmode="true"] .app-center-detail-carousel-dot {
+    background: rgba(255, 255, 255, 0.28);
+}
+[data-darkmode="true"] .app-center-detail-carousel-dots {
+    background: rgba(255, 255, 255, 0.12);
+}
+.app-center-detail-carousel-dot.is-active:hover,
+.app-center-detail-carousel-dot.is-active:focus {
+    background: var(--primary-color-high, #1976d2);
+}
+[data-darkmode="true"] .app-center-detail-carousel-dot.is-active {
+    background: #3b82f6;
+}
+.app-center-detail-carousel-placeholder {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    height: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-color-low, #9ca3af);
+    font-size: 13px;
+}
+.app-center-detail-carousel-slide .app-center-detail-carousel-placeholder {
+    width: 100%;
+    height: 100%;
+    aspect-ratio: auto;
+}
+[data-darkmode="true"] .app-center-detail-carousel-placeholder {
+    color: rgba(255, 255, 255, 0.65);
+}
+@media (max-width: 680px) {
+    .app-center-detail-header {
+        padding: 14px 14px 10px;
+    }
+    .app-center-detail-title {
+        font-size: 16px;
+    }
+    .app-center-detail-body {
+        padding: 12px 14px 14px;
+    }
+}
+</style>
+<div class="fwx-form-card app-center-outer">
+    <div class="app-center-wrap">
+        <div class="app-center-intro">
+            <div class="app-center-intro-title"><%:App Center%></div>
+            <div class="app-center-intro-desc"><%:Install and manage applications%></div>
+        </div>
+        <div class="app-center-toolbar">
+            <button id="btn-refresh-list" class="app-center-refresh-btn"><%:Update List%></button>
+        </div>
+        <div id="app-list" class="app-center-list"></div>
+        <div id="app-loading" class="app-center-loading"><%:Loading...%></div>
+        <div id="app-empty" class="app-center-empty" style="display:none;"><%:No apps available for this device%></div>
+    </div>
+</div>
+<script>
+(function(){
+    var _Install = '<%:Install%>';
+    var _Uninstall = '<%:Uninstall%>';
+    var _Upgrade = '<%:Upgrade%>';
+    var _Installing = '<%:Installing...%>';
+    var _Uninstalling = '<%:Uninstalling...%>';
+    var _InstallSuccess = '<%:Install succeeded%>';
+    var _InstallFailed = '<%:Install failed%>';
+    var _UninstallSuccess = '<%:Uninstall succeeded%>';
+    var _UninstallFailed = '<%:Uninstall failed%>';
+    var _UninstallConfirm = '<%:Are you sure you want to uninstall?%>';
+    var _UninstallConfirmWithConfig = '<%:This app contains configuration data. Do you want to keep the data when uninstalling?%>';
+    var _UninstallConfigHint = '<%:If unchecked, related configuration data will be removed.%>';
+    var _KeepConfigData = '<%:Keep configuration data%>';
+    var _Confirm = '<%:Confirm%>';
+    var _Cancel = '<%:Cancel%>';
+    var _Loading = '<%:Loading...%>';
+    var _LoadFailed = '<%:Load failed%>';
+    var _Version = '<%:Version%>';
+    var _NewVersionFound = '<%:New version found%>';
+    var _BootKernelMismatch = '<%:Boot failed: kernel version mismatch, please reinstall latest plugin%>';
+    var _BootFirmwareMismatch = '<%:Boot failed: firmware version mismatch, please reinstall this plugin%>';
+    var _BootUnknownReason = '<%:Boot failed: unknown reason, please try reinstalling plugin%>';
+    var _UpdateList = '<%:Update List%>';
+    var _Updating = '<%:Updating...%>';
+    var _ListUpdated = '<%:List updated%>';
+    var _ListUpdateFailed = '<%:List update failed%>';
+    var _SyncErrorNetwork = '<%:Network error%>';
+    var _SyncErrorVersion = '<%:Failed to get firmware version information%>';
+    var _SyncErrorServer = '<%:Server error%>';
+    var _SyncErrorNoPlugin = '<%:No plugins available for this firmware version%>';
+    var _AutoSyncUpdating = '<%:Updating...%>';
+    var _AppDetail = '<%:App details%>';
+    var _Detail = '<%:Detail%>';
+    var _FeatureList = '<%:Feature list%>';
+    var _ImageList = '<%:Images%>';
+    var _NoDetail = '<%:No detail available%>';
+    var _NoFeatureList = '<%:No features available%>';
+    var _NoImageList = '<%:No images available%>';
+    var _Open = '<%:Open%>';
+    var _InstallSuccessOpenPrompt = '<%:Install succeeded. Open app now?%>';
+    var _InstallSuccessOpenNote = '<%:Note: In some browsers, the app menu appears only after re-login.%>';
+    var _InstallFailedForApp = '<%:Install failed for app%>';
+    var _UninstallFailedForApp = '<%:Uninstall failed for app%>';
+    var _PleaseInstallDependencyAppsFirst = '<%:Please install dependency apps first%>';
+    var _CannotUninstallDependentApps = '<%:Cannot uninstall because these apps depend on it%>';
+    var _InstallKernelMismatch = '<%:Install blocked: kernel version mismatch, please reinstall this plugin%>';
+    var _InstallFirmwareMismatch = '<%:Install blocked: firmware version mismatch, please reinstall this plugin%>';
+    var _InstallVersionCheckFailed = '<%:Install blocked: runtime version check failed%>';
+    var _Reason = '<%:Reason%>';
+    var _ErrorLog = '<%:Error log%>';
+    var _ErrorLogTruncated = '<%:Error log is too long and has been truncated%>';
+
+    var apiGetAppList = '<%=url("admin/app_center_api/get_app_list")%>';
+    var apiInstall = '<%=url("admin/app_center_api/install_app")%>';
+    var apiUninstall = '<%=url("admin/app_center_api/uninstall_app")%>';
+    var AUTO_SYNC_MAX_AGE_SECONDS = 7 * 24 * 60 * 60;
+    var current_pkg_map = {};
+    var app_center_base_url = '';
+    var auto_sync_tried = false;
+    var auto_sync_running = false;
+
+    function formatSize(bytes) {
+        if (!bytes || bytes < 1024) return (bytes || 0) + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / 1024 / 1024).toFixed(1) + ' MB';
+    }
+
+    function normalizeString(v) {
+        if (v == null) return '';
+        return $.trim(String(v));
+    }
+
+    function decodeBase64Utf8(value) {
+        var b64 = normalizeString(value);
+        if (!b64) return '';
+        try {
+            b64 = b64.replace(/-/g, '+').replace(/_/g, '/').replace(/\s+/g, '');
+            while (b64.length % 4 !== 0) b64 += '=';
+            var bin = window.atob ? window.atob(b64) : '';
+            if (!bin) return '';
+            var esc = '';
+            for (var i = 0; i < bin.length; i++) {
+                var h = bin.charCodeAt(i).toString(16);
+                esc += '%' + (h.length < 2 ? ('0' + h) : h);
+            }
+            return decodeURIComponent(esc);
+        } catch (e) {
+            try {
+                return window.atob ? window.atob(b64) : '';
+            } catch (ignore) {
+                return '';
+            }
+        }
+    }
+
+    function detectBrowserRegion() {
+        var lang = '';
+        if (window.navigator && typeof window.navigator.language === 'string') {
+            lang = window.navigator.language;
+        }
+        lang = normalizeString(lang).toLowerCase();
+        if (lang.indexOf('zh') === 0) return 'cn';
+        return 'en';
+    }
+
+    function buildGetListUrl(sync) {
+        var u = apiGetAppList + (sync ? '?sync=1' : '');
+        var region = detectBrowserRegion();
+        if (region) {
+            u += (u.indexOf('?') >= 0 ? '&' : '?') + 'region=' + encodeURIComponent(region);
+        }
+        return u;
+    }
+
+    function parseBool(v) {
+        if (typeof v === 'boolean') return v;
+        if (typeof v === 'number') return v !== 0;
+        if (typeof v === 'string') {
+            var s = $.trim(v).toLowerCase();
+            if (s === '1' || s === 'true' || s === 'yes' || s === 'y' || s === 'on') return true;
+            if (s === '0' || s === 'false' || s === 'no' || s === 'n' || s === 'off') return false;
+        }
+        return null;
+    }
+
+    function escapeAttr(v) {
+        return String(v == null ? '' : v)
+            .replace(/&/g, '&amp;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+    }
+
+    function parseIntCode(v) {
+        var n = parseInt(v, 10);
+        if (isNaN(n)) return null;
+        return n;
+    }
+
+    function getSyncErrorTextByCode(code) {
+        var c = parseIntCode(code);
+        if (c === 40001) return _SyncErrorNetwork;
+        if (c === 40002) return _SyncErrorVersion;
+        if (c === 40003) return _SyncErrorServer;
+        if (c === 40004) return _SyncErrorNoPlugin;
+        return '';
+    }
+
+    function parseTimestamp(v) {
+        var n = parseInt(v, 10);
+        if (isNaN(n) || n <= 0) return 0;
+        return n;
+    }
+
+    function shouldAutoSyncByTimestamp(data) {
+        var nowTs = Math.floor(Date.now() / 1000);
+        var lastUpdateTs = parseTimestamp(
+            data && (
+                data.last_update_ts != null ? data.last_update_ts :
+                (data.LastUpdateTimestamp != null ? data.LastUpdateTimestamp : data.last_update_timestamp)
+            )
+        );
+        if (!lastUpdateTs) return true;
+        if (lastUpdateTs > nowTs) return false;
+        return (nowTs - lastUpdateTs) > AUTO_SYNC_MAX_AGE_SECONDS;
+    }
+
+    function normalizeStringArray(v) {
+        var out = [];
+        if ($.isArray(v)) {
+            v.forEach(function(item){
+                var s = normalizeString(item);
+                if (s) out.push(s);
+            });
+            return out;
+        }
+        if (typeof v === 'string') {
+            try {
+                var parsed = JSON.parse(v);
+                if ($.isArray(parsed)) {
+                    return normalizeStringArray(parsed);
+                }
+            } catch (e) {}
+            var s = normalizeString(v);
+            if (s) out.push(s);
+            return out;
+        }
+        return out;
+    }
+
+    function resolveTagList(pkg) {
+        if (!pkg || typeof pkg !== 'object') return [];
+        return normalizeStringArray(pkg.tags || pkg.Tags || pkg.TagList || pkg.tag_list);
+    }
+
+    function resolveCornerText(pkg) {
+        if (!pkg || typeof pkg !== 'object') return '';
+        var detail = pkg.DetailInfo || pkg.Detail || pkg.detail_info || pkg.detail;
+        var candidates = [
+            pkg.Corner, pkg.corner,
+            pkg.CornerTag, pkg.corner_tag,
+            pkg.CornerText, pkg.corner_text
+        ];
+        if (detail && typeof detail === 'object' && !$.isArray(detail)) {
+            candidates.push(
+                detail.Corner, detail.corner,
+                detail.CornerTag, detail.corner_tag,
+                detail.CornerText, detail.corner_text
+            );
+        }
+        for (var i = 0; i < candidates.length; i++) {
+            var s = normalizeString(candidates[i]);
+            if (s) return s;
+        }
+        return '';
+    }
+
+    function resolveDetailInfo(pkg) {
+        var info = {};
+        if (pkg && typeof pkg === 'object') {
+            var raw = pkg.DetailInfo || pkg.Detail || pkg.detail_info || pkg.detail;
+            if (raw && typeof raw === 'object' && !$.isArray(raw)) {
+                info = raw;
+            }
+        }
+        var longDesc = normalizeString(
+            info.Detail || info.DetailedDesc || info.DetailDesc || info.LongDesc || info.Description || info.Desc || (pkg && (pkg.Detail || pkg.Desc)) || ''
+        );
+        var featureList = normalizeStringArray(
+            info.FeatureList || info.Features || info.Feature || info.feature_list || info.features
+        );
+        var imageList = normalizeStringArray(
+            info.ImageList || info.Images || info.ImagePaths || info.image_list || info.images
+        );
+        return {
+            long_desc: longDesc,
+            feature_list: featureList,
+            image_list: imageList
+        };
+    }
+
+    function resolveImageUrl(path) {
+        var raw = normalizeString(path);
+        if (!raw) return '';
+        if (/^(https?:)?\/\//i.test(raw) || raw.indexOf('data:') === 0) {
+            if (window.console && console.log) {
+                console.log('[app_center] image url keep original:', raw);
+            }
+            return raw;
+        }
+        if (app_center_base_url) {
+            var base = app_center_base_url.replace(/\/+$/, '');
+            if (raw.charAt(0) === '/') {
+                var full1 = base + raw;
+                if (window.console && console.log) {
+                    console.log('[app_center] image url resolved:', raw, '=>', full1);
+                }
+                return full1;
+            }
+            var full2 = base + '/' + raw.replace(/^\/+/, '');
+            if (window.console && console.log) {
+                console.log('[app_center] image url resolved:', raw, '=>', full2);
+            }
+            return full2;
+        }
+        if (window.console && console.log) {
+            console.log('[app_center] image url fallback:', raw);
+        }
+        return raw;
+    }
+
+    function resolveLuciUrl(path) {
+        var raw = normalizeString(path);
+        if (!raw) return '';
+        if (/^(https?:)?\/\//i.test(raw)) {
+            return raw;
+        }
+        if (raw.indexOf('/cgi-bin/luci/') === 0) {
+            return raw;
+        }
+        raw = raw.replace(/^\/+/, '');
+        if (raw.indexOf('admin/') === 0) {
+            return '/cgi-bin/luci/' + raw;
+        }
+        return '/cgi-bin/luci/admin/' + raw;
+    }
+
+    function boot_hint_by_code(code) {
+        var c = parseIntCode(code);
+        if (c === null || c === 2000) return '';
+        if (c === 4001) return _BootKernelMismatch;
+        if (c === 4002) return _BootFirmwareMismatch;
+        if (c === 4003) return _BootUnknownReason;
+        return '';
+    }
+
+    function iconLocalUrl(name) {
+        var appName = normalizeString(name);
+        if (!appName) return '';
+        return '/luci-static/resources/app_center/' + encodeURIComponent(appName) + '/icon.png';
+    }
+
+    function renderLogoHtml(name, withIcon) {
+        var safeName = normalizeString(name);
+        var letter = (safeName.charAt(0).toUpperCase() || '?');
+        var hasIcon = parseBool(withIcon) === true;
+        var html = '<div class="app-center-logo">';
+        if (hasIcon) {
+            html += '<img class="app-center-logo-img" src="' + escapeAttr(iconLocalUrl(safeName)) + '" alt="">';
+        }
+        html += '<span class="app-center-logo-fallback' + (hasIcon ? ' is-hidden' : '') + '">' + escapeAttr(letter) + '</span>';
+        html += '</div>';
+        return html;
+    }
+
+    function bindLogoFallback() {
+        var $imgs = $('#app-list').find('img.app-center-logo-img');
+        $imgs.off('.app_center_icon')
+            .on('error.app_center_icon', function(){
+                var $img = $(this);
+                $img.hide();
+                $img.siblings('.app-center-logo-fallback').removeClass('is-hidden');
+            })
+            .on('load.app_center_icon', function(){
+                var $img = $(this);
+                $img.show();
+                $img.siblings('.app-center-logo-fallback').addClass('is-hidden');
+            });
+        $imgs.each(function(){
+            if (this.complete) {
+                if (this.naturalWidth && this.naturalHeight) {
+                    $(this).triggerHandler('load.app_center_icon');
+                } else {
+                    $(this).triggerHandler('error.app_center_icon');
+                }
+            }
+        });
+    }
+
+    function hasPathListValue(v) {
+        if ($.isArray(v)) return v.length > 0;
+        if (typeof v === 'string') return $.trim(v) !== '';
+        return false;
+    }
+
+    function resolveHasConfig(pkg) {
+        var parsed = parseBool(pkg && pkg.HasConfig);
+        if (parsed === true) return true;
+        if (hasPathListValue(pkg && pkg.ConfigPathList)) return true;
+        return false;
+    }
+
+    function showAppCenterModal(message, duration, type) {
+        showCommonModal(message, duration || 2500, type || 'info');
+    }
+
+    function showAppCenterPersistentModal(message) {
+        $('.common-modal-mask').remove();
+        var $mask = $('<div class="common-modal-mask app-center-message-mask"></div>');
+        var $content = $('<div class="common-modal-content app-center-message-modal app-center-message-modal-persistent"></div>');
+        var $text = $('<div class="app-center-message-text"></div>').text(message || '');
+        var $btn = $('<button type="button" class="app-center-message-close-btn" aria-label="close">&times;</button>');
+        $content.append($btn).append($text);
+        $mask.append($content);
+        $('body').append($mask);
+        $btn.on('click', function(){
+            $mask.removeClass('show');
+            setTimeout(function(){ $mask.remove(); }, 180);
+        });
+        setTimeout(function(){ $mask.addClass('show'); }, 10);
+    }
+
+    function resolveAliasByName(name) {
+        var n = normalizeString(name);
+        if (!n) return '';
+        var pkg = current_pkg_map[n];
+        return normalizeString((pkg && (pkg.Alias || pkg.Name)) || n);
+    }
+
+    function resolveRespAlias(resp, fallbackName) {
+        var alias = normalizeString(resp && resp.data && resp.data.Alias);
+        if (alias) return alias;
+        var byName = resolveAliasByName(fallbackName);
+        if (byName) return byName;
+        return normalizeString(fallbackName);
+    }
+
+    function mapAppNamesToAlias(names) {
+        var out = [];
+        normalizeStringArray(names).forEach(function(n){
+            out.push(resolveAliasByName(n) || n);
+        });
+        return out;
+    }
+
+    function buildInstallFailMessage(resp, name) {
+        var alias = resolveRespAlias(resp, name);
+        var code = parseIntCode(resp && resp.code);
+        var lines = [_InstallFailedForApp + ': ' + alias];
+        if (code === 4010) {
+            var missing = mapAppNamesToAlias(resp && resp.data && resp.data.missing_depends);
+            if (missing.length > 0) {
+                lines.push(_PleaseInstallDependencyAppsFirst + ': ' + missing.join(', '));
+                return lines.join('\n');
+            }
+        }
+        if (code === 4012) {
+            lines.push(_InstallKernelMismatch);
+            return lines.join('\n');
+        }
+        if (code === 4013) {
+            lines.push(_InstallFirmwareMismatch);
+            return lines.join('\n');
+        }
+        if (code === 4014) {
+            lines.push(_InstallVersionCheckFailed);
+            return lines.join('\n');
+        }
+        var reason = normalizeString(resp && resp.msg);
+        if (reason) lines.push(_Reason + ': ' + reason);
+        var errorLog = decodeBase64Utf8(resp && resp.data && resp.data.ErrorLogBase64);
+        if (errorLog) {
+            lines.push(_ErrorLog + ':');
+            lines.push(errorLog);
+            if (parseBool(resp && resp.data && resp.data.ErrorLogTruncated) === true) {
+                lines.push(_ErrorLogTruncated);
+            }
+        }
+        return lines.join('\n');
+    }
+
+    function buildUninstallFailMessage(resp, name) {
+        var alias = resolveRespAlias(resp, name);
+        var code = parseIntCode(resp && resp.code);
+        var lines = [_UninstallFailedForApp + ': ' + alias];
+        if (code === 4011) {
+            var deps = normalizeStringArray(resp && resp.data && resp.data.dependent_aliases);
+            if (deps.length === 0) {
+                deps = mapAppNamesToAlias(resp && resp.data && resp.data.dependent_apps);
+            }
+            if (deps.length > 0) {
+                lines.push(_CannotUninstallDependentApps + ': ' + deps.join(', '));
+                return lines.join('\n');
+            }
+        }
+        var reason = normalizeString(resp && resp.msg);
+        if (reason) lines.push(_Reason + ': ' + reason);
+        return lines.join('\n');
+    }
+
+    function closeUninstallModal($mask) {
+        $mask.removeClass('show');
+        setTimeout(function(){ $mask.remove(); }, 180);
+    }
+
+    function closeDetailModal($mask, cleanupFn) {
+        if (cleanupFn) cleanupFn();
+        $mask.removeClass('show');
+        setTimeout(function(){ $mask.remove(); }, 180);
+    }
+
+    function closeInstallOpenModal($mask) {
+        $mask.removeClass('show');
+        setTimeout(function(){ $mask.remove(); }, 180);
+    }
+
+    function showInstallOpenDialog(luciUrl, onCancel) {
+        $('.common-modal-mask').remove();
+        var $mask = $('<div class="common-modal-mask"></div>');
+        var $content = $('<div class="common-modal-content app-center-install-open-modal"></div>');
+        var $title = $('<div class="app-center-install-open-title"></div>').html(_InstallSuccessOpenPrompt + '<br>' + _InstallSuccessOpenNote);
+        var $actions = $('<div class="app-center-install-open-actions"></div>');
+        var $cancel = $('<button type="button" class="app-center-install-open-btn app-center-install-open-btn-cancel"></button>').text(_Cancel);
+        var $open = $('<button type="button" class="app-center-install-open-btn app-center-install-open-btn-open"></button>').text(_Open);
+
+        $actions.append($cancel).append($open);
+        $content.append($title).append($actions);
+        $mask.append($content);
+        $('body').append($mask);
+
+        $cancel.on('click', function(){
+            closeInstallOpenModal($mask);
+            if (onCancel) onCancel();
+        });
+        $open.on('click', function(){
+            closeInstallOpenModal($mask);
+            window.location.href = luciUrl;
+        });
+        setTimeout(function(){ $mask.addClass('show'); }, 10);
+    }
+
+    function onInstallSucceeded(name) {
+        var pkg = current_pkg_map[normalizeString(name)] || {};
+        var luciPath = normalizeString(pkg.LuciPath || pkg.luci_path);
+        var luciUrl = resolveLuciUrl(luciPath);
+        if (luciUrl) {
+            showInstallOpenDialog(luciUrl, function(){
+                showAppCenterModal(_InstallSuccess, 2000, 'success');
+                load();
+            });
+            return;
+        }
+        showAppCenterModal(_InstallSuccess, 2000, 'success');
+        load();
+    }
+
+    function showSyncLoadingModal(message) {
+        $('.app-center-sync-mask').remove();
+        var $mask = $('<div class="common-modal-mask app-center-sync-mask"></div>');
+        var $content = $('<div class="common-modal-content app-center-sync-modal"></div>');
+        var $spinner = $('<div class="app-center-sync-spinner"></div>');
+        var $text = $('<div class="app-center-sync-text"></div>').text(message || _AutoSyncUpdating);
+        $content.append($spinner).append($text);
+        $mask.append($content);
+        $('body').append($mask);
+        setTimeout(function(){ $mask.addClass('show'); }, 10);
+        return function closeModal() {
+            $mask.removeClass('show');
+            setTimeout(function(){ $mask.remove(); }, 180);
+        };
+    }
+
+    function createDetailCarousel(imageList, title) {
+        var slide_list = $.isArray(imageList) ? imageList : [];
+        var $gallery = $('<div class="app-center-detail-gallery"></div>');
+        var $viewport = $('<div class="app-center-detail-carousel-viewport"></div>');
+        var $track = $('<div class="app-center-detail-carousel-track"></div>');
+        var $dots = $('<div class="app-center-detail-carousel-dots"></div>');
+        var slide_count = 0;
+        var current_index = 0;
+        var auto_timer = null;
+        var touch_start_x = 0;
+
+        function stopAutoPlay() {
+            if (auto_timer) {
+                clearInterval(auto_timer);
+                auto_timer = null;
+            }
+        }
+
+        function startAutoPlay() {
+            stopAutoPlay();
+            if (slide_count <= 1) return;
+            auto_timer = setInterval(function(){
+                current_index += 1;
+                if (current_index >= slide_count) current_index = 0;
+                renderCarousel(true);
+            }, 4500);
+        }
+
+        function renderCarousel(with_animation) {
+            if (!slide_count) return;
+            if (current_index < 0) current_index = slide_count - 1;
+            if (current_index >= slide_count) current_index = 0;
+            $track.css('transition', with_animation ? 'transform 0.34s ease' : 'none');
+            $track.css('transform', 'translateX(' + (-100 * current_index) + '%)');
+            $dots.find('.app-center-detail-carousel-dot')
+                .removeClass('is-active')
+                .eq(current_index)
+                .addClass('is-active');
+        }
+
+        slide_list.forEach(function(path){
+            var src = resolveImageUrl(path);
+            if (!src) return;
+            var dot_index = slide_count;
+            slide_count += 1;
+
+            var $slide = $('<div class="app-center-detail-carousel-slide"></div>');
+            var $img = $('<img class="app-center-detail-image" alt="">');
+            $img.attr('src', src);
+            $img.attr('alt', title + ' ' + (dot_index + 1));
+            $img.on('error', function(){
+                var $placeholder = $('<div class="app-center-detail-carousel-placeholder"></div>').text(_NoImageList);
+                $(this).replaceWith($placeholder);
+            });
+            $slide.append($img);
+            $track.append($slide);
+
+            var $dot = $('<button type="button" class="app-center-detail-carousel-dot" aria-label="' + (dot_index + 1) + '"></button>');
+            $dot.on('click.app_center_carousel', function(e){
+                e.preventDefault();
+                current_index = dot_index;
+                renderCarousel(true);
+                startAutoPlay();
+            });
+            $dots.append($dot);
+        });
+
+        if (!slide_count) {
+            $gallery.append($('<div class="app-center-detail-carousel-placeholder"></div>').text(_NoImageList));
+            return {
+                $el: $gallery,
+                destroy: function(){}
+            };
+        }
+
+        $viewport.append($track);
+        if (slide_count > 1) {
+            $viewport.append($dots);
+        }
+        $gallery.append($viewport);
+
+        $viewport.on('touchstart.app_center_carousel', function(e){
+            var oe = e.originalEvent;
+            if (oe && oe.touches && oe.touches.length > 0) {
+                touch_start_x = oe.touches[0].clientX;
+                stopAutoPlay();
+            }
+        });
+        $viewport.on('touchend.app_center_carousel', function(e){
+            if (slide_count <= 1) return;
+            var oe = e.originalEvent;
+            if (!oe || !oe.changedTouches || oe.changedTouches.length === 0) return;
+            var touch_end_x = oe.changedTouches[0].clientX;
+            var delta = touch_end_x - touch_start_x;
+            if (Math.abs(delta) > 35) {
+                current_index += (delta < 0 ? 1 : -1);
+                renderCarousel(true);
+            }
+            startAutoPlay();
+        });
+        $gallery.on('mouseenter.app_center_carousel', stopAutoPlay);
+        $gallery.on('mouseleave.app_center_carousel', startAutoPlay);
+
+        renderCarousel(false);
+        startAutoPlay();
+
+        return {
+            $el: $gallery,
+            destroy: function(){
+                stopAutoPlay();
+                $gallery.off('.app_center_carousel');
+                $viewport.off('.app_center_carousel');
+                $dots.find('.app-center-detail-carousel-dot').off('.app_center_carousel');
+            }
+        };
+    }
+
+    function showDetailDialog(pkg) {
+        var detail = resolveDetailInfo(pkg || {});
+        var imageList = detail.image_list || [];
+        var hasImage = imageList.length > 0;
+        var close_cleanup = null;
+        var title = normalizeString((pkg && (pkg.Alias || pkg.Name)) || _AppDetail);
+        var versionText = normalizeString((pkg && (pkg.InstalledVersion || pkg.Version)) || '');
+        var subtitleText = versionText ? (_Version + ': ' + versionText) : '';
+        var installed = parseBool(pkg && pkg.Installed) === true;
+        var luciPath = normalizeString((pkg && (pkg.LuciPath || pkg.luci_path)) || '');
+        var luciUrl = installed ? resolveLuciUrl(luciPath) : '';
+
+        $('.common-modal-mask').remove();
+        var $mask = $('<div class="common-modal-mask"></div>');
+        var detailModalClass = 'common-modal-content app-center-detail-modal ' + (hasImage ? 'has-image' : 'no-image');
+        var $content = $('<div class="' + detailModalClass + '"></div>');
+        var $header = $('<div class="app-center-detail-header"></div>');
+        var $titleWrap = $('<div class="app-center-detail-title-wrap"></div>');
+        var $title = $('<div class="app-center-detail-title"></div>').text(title);
+        var $close = $('<button type="button" class="app-center-detail-close" aria-label="' + escapeAttr(_Cancel) + '">&times;</button>');
+        var $body = $('<div class="app-center-detail-body"></div>');
+        $titleWrap.append($title);
+        if (subtitleText || luciUrl) {
+            var $subtitle = $('<div class="app-center-detail-subtitle"></div>');
+            if (subtitleText) {
+                $subtitle.append($('<span></span>').text(subtitleText));
+            }
+            if (luciUrl) {
+                var $openBtn = $('<a class="app-center-detail-open-btn" target="_blank" rel="noopener noreferrer"></a>')
+                    .attr('href', luciUrl)
+                    .text(_Open);
+                $subtitle.append($openBtn);
+            }
+            $titleWrap.append($subtitle);
+        }
+
+        var $descSection = $('<div class="app-center-detail-section"></div>');
+        $descSection.append($('<div class="app-center-detail-label"></div>').text(_Detail));
+        if (detail.long_desc) {
+            $descSection.append($('<div class="app-center-detail-desc"></div>').text(detail.long_desc));
+        } else {
+            $descSection.append($('<div class="app-center-detail-empty"></div>').text(_NoDetail));
+        }
+        $body.append($descSection);
+
+        if (detail.feature_list && detail.feature_list.length > 0) {
+            var $featureSection = $('<div class="app-center-detail-section"></div>');
+            $featureSection.append($('<div class="app-center-detail-label"></div>').text(_FeatureList));
+            var $ul = $('<ul class="app-center-detail-feature-list"></ul>');
+            detail.feature_list.forEach(function(item){
+                $ul.append($('<li class="app-center-detail-feature-item"></li>').text(item));
+            });
+            $featureSection.append($ul);
+            $body.append($featureSection);
+        }
+
+        if (hasImage) {
+            var $imageSection = $('<div class="app-center-detail-section"></div>');
+            $imageSection.append($('<div class="app-center-detail-label"></div>').text(_ImageList));
+            var carousel = createDetailCarousel(imageList, title);
+            close_cleanup = carousel.destroy;
+            $imageSection.append(carousel.$el);
+            $body.append($imageSection);
+        }
+
+        $header.append($titleWrap).append($close);
+        $content.append($header).append($body);
+        $mask.append($content);
+        $('body').append($mask);
+
+        $close.on('click', function(){
+            closeDetailModal($mask, close_cleanup);
+        });
+        $mask.on('click', function(e){
+            if (e.target === $mask[0]) {
+                closeDetailModal($mask, close_cleanup);
+            }
+        });
+        setTimeout(function(){ $mask.addClass('show'); }, 10);
+    }
+
+    function showUninstallDialog(hasConfig, onConfirm) {
+        if (!hasConfig) {
+            if (confirm(_UninstallConfirm) && onConfirm) onConfirm(false);
+            return;
+        }
+        $('.common-modal-mask').remove();
+        var $mask = $('<div class="common-modal-mask"></div>');
+        var $content = $('<div class="common-modal-content app-center-uninstall-modal"></div>');
+        var $title = $('<div class="app-center-uninstall-title"></div>').text(_UninstallConfirmWithConfig);
+        var $hint = $('<div class="app-center-uninstall-hint"></div>').text(_UninstallConfigHint);
+        var $label = $('<label class="app-center-keep-config-label"></label>');
+        var $check = $('<input type="checkbox">');
+        $check.prop('checked', true);
+        var $text = $('<span></span>').text(_KeepConfigData);
+        var $actions = $('<div class="app-center-uninstall-actions"></div>');
+        var $cancel = $('<button type="button" class="app-center-uninstall-btn app-center-uninstall-btn-cancel"></button>').text(_Cancel);
+        var $confirm = $('<button type="button" class="app-center-uninstall-btn app-center-uninstall-btn-confirm"></button>').text(_Confirm);
+
+        $label.append($check).append($text);
+        $actions.append($cancel).append($confirm);
+        $content.append($title).append($hint).append($label).append($actions);
+        $mask.append($content);
+        $('body').append($mask);
+
+        $cancel.on('click', function(){
+            closeUninstallModal($mask);
+        });
+        $confirm.on('click', function(){
+            var keepConfig = $check.prop('checked') === true;
+            closeUninstallModal($mask);
+            if (onConfirm) onConfirm(keepConfig);
+        });
+        setTimeout(function(){ $mask.addClass('show'); }, 10);
+    }
+
+    function renderCard(pkg) {
+        var name = pkg.Name || '-';
+        var alias = pkg.Alias || name;
+        var desc = pkg.Desc || '';
+        var latestVer = pkg.Version || '';
+        var installedVer = pkg.InstalledVersion || '';
+        var size = pkg.Size || 0;
+        var installed = parseBool(pkg.Installed) === true;
+        var hasUpgrade = parseBool(pkg.HasNewVersion) === true;
+        var withIcon = parseBool(pkg.WithIcon) === true;
+        if (!hasUpgrade && installed && installedVer && latestVer && installedVer !== latestVer) {
+            hasUpgrade = true;
+        }
+        if (installed && !installedVer) {
+            installedVer = latestVer;
+        }
+        var bootCode = (pkg.boot_code !== undefined && pkg.boot_code !== null) ? pkg.boot_code : pkg.BootCode;
+        var bootHint = boot_hint_by_code(bootCode);
+        var tags = resolveTagList(pkg);
+        var cornerText = resolveCornerText(pkg);
+        var cornerHtml = cornerText ? ('<div class="app-center-card-tag-corner" title="' + escapeAttr(cornerText) + '">' + escapeAttr(cornerText) + '</div>') : '';
+
+        var btnClass = 'app-center-btn';
+        var btnHtml = '';
+        var hasConfig = resolveHasConfig(pkg);
+        if (installed) {
+            btnHtml = '<button class="' + btnClass + ' app-center-btn-uninstall btn-uninstall" data-name="' + escapeAttr(name) + '" data-has-config="' + (hasConfig ? '1' : '0') + '">' + _Uninstall + '</button>';
+        } else {
+            btnHtml = '<button class="' + btnClass + ' app-center-btn-install btn-install" data-name="' + escapeAttr(name) + '">' + _Install + '</button>';
+        }
+
+        var verText = '';
+        if (hasUpgrade) {
+            verText = _Version + ': ' + installedVer + ' (' + _NewVersionFound + ')';
+        } else {
+            verText = (installedVer || latestVer) ? (_Version + ': ' + (installedVer || latestVer)) : '';
+        }
+        if (size && verText) verText += ' | ' + formatSize(size);
+        else if (size) verText = formatSize(size);
+        if (tags.length > 0) {
+            var tagsText = tags.join(' | ');
+            if (verText) verText += ' | ' + tagsText;
+            else verText = tagsText;
+        }
+        var nameHtml = (alias || name);
+        if (bootHint) {
+            nameHtml += '<span class="app-center-boot-hint">' + _LoadFailed + '<span class="app-center-boot-help" title="' + escapeAttr(bootHint) + '">?</span></span>';
+        }
+        var logoHtml = renderLogoHtml(name, withIcon);
+
+        return '<div class="app-center-card" data-name="' + escapeAttr(name) + '">' +
+            cornerHtml +
+            logoHtml +
+            '<div class="app-center-body">' +
+                '<div class="app-center-name">' + nameHtml + '</div>' +
+                '<div class="app-center-desc">' + (desc || '\u00A0') + '</div>' +
+                '<div class="app-center-version">' + (verText || '\u00A0') + '</div>' +
+            '</div>' +
+            '<div class="app-center-actions">' + btnHtml + '</div>' +
+        '</div>';
+    }
+
+    function renderData(data) {
+        var plist = (data && data.PackageList) || [];
+        current_pkg_map = {};
+        app_center_base_url = normalizeString(data && data.Url);
+        $('#app-list').empty();
+        $('#app-empty').hide();
+        if (!plist || plist.length === 0) {
+            $('#app-empty').show();
+            return;
+        }
+        plist.forEach(function(p){
+            var pkgName = normalizeString(p && p.Name);
+            if (pkgName) current_pkg_map[pkgName] = p;
+            $('#app-list').append(renderCard(p));
+        });
+        bindLogoFallback();
+        bindActions();
+    }
+
+    function load() {
+        $('#app-list').empty();
+        $('#app-loading').show().text(_Loading);
+        $('#app-empty').hide();
+        auto_sync_tried = false;
+        $.getJSON(buildGetListUrl(false)).done(function(resp){
+            $('#app-loading').hide();
+            if (!resp || (resp.code !== 2000 && resp.code !== 20000)) {
+                $('#app-empty').text(_LoadFailed).show();
+                return;
+            }
+            var data = resp.data || {};
+            if (shouldAutoSyncByTimestamp(data) && !auto_sync_tried) {
+                auto_sync_tried = true;
+                refreshList({ auto_sync: true });
+                return;
+            }
+            renderData(data);
+        }).fail(function(){
+            $('#app-loading').hide();
+            $('#app-empty').text(_LoadFailed).show();
+        });
+    }
+
+    function refreshList(options) {
+        var opts = options || {};
+        if (auto_sync_running) return;
+        auto_sync_running = true;
+        var $btn = $('#btn-refresh-list');
+            var closeSyncModal = null;
+            if (opts.auto_sync) {
+                closeSyncModal = showSyncLoadingModal(_AutoSyncUpdating);
+            }
+            $btn.prop('disabled', true).text(_Updating);
+        $.getJSON(buildGetListUrl(true)).done(function(resp){
+            if (resp && (resp.code === 2000 || resp.code === 20000)) {
+                if (opts.auto_sync) {
+                    renderData((resp && resp.data) || {});
+                } else {
+                    load();
+                }
+                showAppCenterModal(_ListUpdated, 2000, 'success');
+            } else {
+                var reason = getSyncErrorTextByCode(resp && resp.code);
+                showAppCenterModal(_ListUpdateFailed + (reason ? ': ' + reason : ''), 2800, 'error');
+            }
+        }).fail(function(){
+            showAppCenterModal(_ListUpdateFailed + ': ' + _SyncErrorNetwork, 2500, 'error');
+        }).always(function(){
+            if (closeSyncModal) closeSyncModal();
+            auto_sync_running = false;
+            $btn.prop('disabled', false).text(_UpdateList);
+        });
+    }
+
+    function bindActions() {
+        $('#app-list').off('click', '.app-center-card').on('click', '.app-center-card', function(e){
+            if ($(e.target).closest('.app-center-actions, .app-center-btn, .app-center-boot-help').length > 0) {
+                return;
+            }
+            var name = normalizeString($(this).attr('data-name'));
+            if (!name || !current_pkg_map[name]) return;
+            showDetailDialog(current_pkg_map[name]);
+        });
+        $('#app-list').off('click', '.btn-install').on('click', '.btn-install', function(e){
+            e.stopPropagation();
+            var $btn = $(this);
+            var name = $btn.data('name');
+            $btn.prop('disabled', true).text(_Installing);
+            $.ajax({
+                url: apiInstall,
+                method: 'POST',
+                data: { name: name }
+            }).done(function(resp){
+                if (resp && (resp.code === 2000 || resp.code === 20000)) {
+                    onInstallSucceeded(name);
+                } else {
+                    showAppCenterPersistentModal(buildInstallFailMessage(resp, name));
+                }
+            }).fail(function(){
+                showAppCenterPersistentModal(buildInstallFailMessage(null, name));
+            }).always(function(){
+                $btn.prop('disabled', false).text(_Install);
+            });
+        });
+        $('#app-list').off('click', '.btn-uninstall').on('click', '.btn-uninstall', function(e){
+            e.stopPropagation();
+            var $btn = $(this);
+            var name = $btn.data('name');
+            var hasConfig = parseBool($btn.attr('data-has-config')) === true;
+            showUninstallDialog(hasConfig, function(keepConfig){
+                $btn.prop('disabled', true).text(_Uninstalling);
+                $.ajax({
+                    url: apiUninstall,
+                    method: 'POST',
+                    data: { name: name, keep_config: keepConfig ? '1' : '0' }
+                }).done(function(resp){
+                    if (resp && (resp.code === 2000 || resp.code === 20000)) {
+                        showAppCenterModal(_UninstallSuccess, 2000, 'success');
+                        load();
+                    } else {
+                        showAppCenterPersistentModal(buildUninstallFailMessage(resp, name));
+                    }
+                }).fail(function(){
+                    showAppCenterPersistentModal(buildUninstallFailMessage(null, name));
+                }).always(function(){
+                    $btn.prop('disabled', false).text(_Uninstall);
+                });
+            });
+        });
+        $('#app-list').off('click', '.btn-upgrade').on('click', '.btn-upgrade', function(e){
+            e.stopPropagation();
+            var $btn = $(this);
+            var name = $btn.data('name');
+            $btn.prop('disabled', true).text(_Installing);
+            $.ajax({
+                url: apiInstall,
+                method: 'POST',
+                data: { name: name }
+            }).done(function(resp){
+                if (resp && (resp.code === 2000 || resp.code === 20000)) {
+                    onInstallSucceeded(name);
+                } else {
+                    showAppCenterPersistentModal(buildInstallFailMessage(resp, name));
+                }
+            }).fail(function(){
+                showAppCenterPersistentModal(buildInstallFailMessage(null, name));
+            }).always(function(){
+                $btn.prop('disabled', false).text(_Upgrade);
+            });
+        });
+    }
+
+    $('#btn-refresh-list').on('click', function(){
+        refreshList();
+    });
+    $(load);
+})();
+</script>
+<%+footer%>

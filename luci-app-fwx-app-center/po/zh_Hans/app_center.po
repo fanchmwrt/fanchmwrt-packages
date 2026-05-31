@@ -1,0 +1,179 @@
+﻿msgid "App Center"
+msgstr "应用中心"
+
+msgid "Install and manage applications"
+msgstr "安装和管理应用"
+
+msgid "Install"
+msgstr "安装"
+
+msgid "Uninstall"
+msgstr "卸载"
+
+msgid "Upgrade"
+msgstr "升级"
+
+msgid "Installing..."
+msgstr "安装中..."
+
+msgid "Uninstalling..."
+msgstr "卸载中..."
+
+msgid "Install succeeded"
+msgstr "安装成功"
+
+msgid "Install failed"
+msgstr "安装失败"
+
+msgid "Uninstall succeeded"
+msgstr "卸载成功"
+
+msgid "Uninstall failed"
+msgstr "卸载失败"
+
+msgid "Are you sure you want to uninstall?"
+msgstr "确定要卸载吗？"
+
+msgid "Loading..."
+msgstr "加载中..."
+
+msgid "Load failed"
+msgstr "加载失败"
+
+msgid "No apps available for this device"
+msgstr "当前设备暂无可用应用"
+
+msgid "Version"
+msgstr "版本"
+
+msgid "Size"
+msgstr "大小"
+
+msgid "Cannot reach server; showing locally saved app information."
+msgstr "无法连接服务器，正在显示本地保存的应用信息。"
+
+msgid "Update List"
+msgstr "更新列表"
+
+msgid "Updating..."
+msgstr "更新中..."
+
+msgid "List updated"
+msgstr "列表已更新"
+
+msgid "List update failed"
+msgstr "列表更新失败"
+
+msgid "Network error"
+msgstr "网络错误"
+
+msgid "Failed to get firmware version information"
+msgstr "获取版本失败"
+
+msgid "No plugins available for this firmware version"
+msgstr "该版本固件没有可用插件"
+
+msgid "Server not found"
+msgstr "服务器未找到"
+
+msgid "Server error"
+msgstr "服务器错误"
+
+msgid "Showing local cache app list. Click Update List to sync latest data."
+msgstr "当前显示本地缓存应用列表，点击“更新列表”可同步最新数据。"
+
+msgid "New version found"
+msgstr "发现新版本"
+
+msgid "Boot failed: kernel version mismatch, please reinstall latest plugin"
+msgstr "加载失败，内核版本不匹配，请重新安装最新插件"
+
+msgid "This app contains configuration data. Do you want to keep the data when uninstalling?"
+msgstr "该应用包含配置数据，卸载时是否保留配置数据？"
+
+msgid "If unchecked, related configuration data will be removed."
+msgstr "取消勾选后将删除相关配置数据。"
+
+msgid "Keep configuration data"
+msgstr "保留配置数据"
+
+msgid "Confirm"
+msgstr "确认"
+
+msgid "Cancel"
+msgstr "取消"
+
+msgid "Install failed for app"
+msgstr "应用安装失败"
+
+msgid "Uninstall failed for app"
+msgstr "应用卸载失败"
+
+msgid "Please install dependency apps first"
+msgstr "请先安装依赖的应用"
+
+msgid "Cannot uninstall because these apps depend on it"
+msgstr "无法卸载，以下应用依赖它"
+
+msgid "Reason"
+msgstr "原因"
+
+msgid "Boot failed: firmware version mismatch, please reinstall this plugin"
+msgstr "加载失败，固件版本不匹配，请重新安装该插件"
+
+msgid "Boot failed: unknown reason, please try reinstalling plugin"
+msgstr "加载失败，未知原因，请尝试重新安装插件"
+
+msgid "Install blocked: kernel version mismatch, please reinstall this plugin"
+msgstr "安装受阻，内核版本不匹配，请重新安装该插件"
+
+msgid "Install blocked: firmware version mismatch, please reinstall this plugin"
+msgstr "安装受阻，固件版本不匹配，请重新安装该插件"
+
+msgid "Install blocked: runtime version check failed"
+msgstr "安装受阻，运行环境版本检查失败"
+
+msgid "Region"
+msgstr "区域"
+
+msgid "Chinese"
+msgstr "中文"
+
+msgid "English"
+msgstr "英文"
+
+msgid "Open"
+msgstr "打开"
+
+msgid "App details"
+msgstr "应用详情"
+
+msgid "Detail"
+msgstr "详情"
+
+msgid "Feature list"
+msgstr "特性列表"
+
+msgid "Images"
+msgstr "图片"
+
+msgid "No features available"
+msgstr "暂无特性说明"
+
+msgid "No detail available"
+msgstr "暂无详情"
+
+msgid "No images available"
+msgstr "暂无图片"
+
+msgid "Install succeeded. Open app now?"
+msgstr "安装成功，是否立即打开应用"
+
+msgid "Note: In some browsers, the app menu appears only after re-login."
+msgstr "注意部分浏览器重新登录后才会在菜单中显示。"
+
+msgid "Error log"
+msgstr "错误日志"
+
+msgid "Error log is too long and has been truncated"
+msgstr "错误日志过长，已截断显示"
