@@ -337,6 +337,22 @@
 					.replace(/'/g, '&#39;');
 			}
 
+			function normalizePcStatusKey(statusKey) {
+				if (statusKey === 'app_limited' || statusKey === 'mac_blocked') {
+					return statusKey;
+				}
+				return 'unlimited';
+			}
+
+			function formatPcStatus(statusKey) {
+				var statusTextMap = {
+					unlimited: '<%:Unrestricted%>',
+					app_limited: '<%:App Restricted%>',
+					mac_blocked: '<%:Disconnected%>'
+				};
+				return statusTextMap[normalizePcStatusKey(statusKey)];
+			}
+
 			function buildAppIconHtml(app, styleText) {
 				var appName = escapeHtml(app && app.name ? app.name : '');
 				var appId = app && app.id !== undefined && app.id !== null ? String(app.id).trim() : '';
@@ -482,8 +498,9 @@
 					var detail = data || {};
 					loadAppClassNameMap(function() {
 						var matched = pickOneMatchedRule(detail);
+						var statusKey = normalizePcStatusKey(detail.pc_status_key || detail.pc_status);
 						$('#pcDetailMac').text(mac || '--');
-						$('#pcDetailStatus').text(detail.pc_status || '<%:Unrestricted%>');
+						$('#pcDetailStatus').text(formatPcStatus(statusKey));
 						$('#pcRuleDetailBody').html(buildRuleRows(matched.type, matched.rule));
 						$('#pcDetailModal').css('display', 'flex');
 					});
@@ -567,13 +584,8 @@
 							display_url = current_url.substring(0, 20) + "...";
 						}
 						$tr.append(`<td class="td"><span title="${current_url}">${display_url}</span></td>`);
-						var pcStatusKey = user_list[i].pc_status_key || "unlimited";
-						var statusTextMap = {
-							unlimited: "<%:Unrestricted%>",
-							app_limited: "<%:App Restricted%>",
-							mac_blocked: "<%:Disconnected%>"
-						};
-						var pcStatus = statusTextMap[pcStatusKey] || user_list[i].pc_status || "<%:Unrestricted%>";
+						var pcStatusKey = normalizePcStatusKey(user_list[i].pc_status_key || user_list[i].pc_status);
+						var pcStatus = formatPcStatus(pcStatusKey);
 						var pcStatusHtml = '<span>' + escapeHtml(pcStatus) + '</span>';
 						if (pcStatusKey === "unlimited") {
 							pcStatusHtml = '<span class="pc-status-unrestricted">' + escapeHtml(pcStatus) + '</span>';
@@ -1007,7 +1019,7 @@
 
 //]]></script>
 
-<div style="max-height: 1000px; overflow-y: auto; overflow-x: auto; padding-right: 20px;"> 
+<div class="user-status-content" style="max-height: 1000px; overflow-y: auto; overflow-x: auto; padding-right: 20px;">
 
 	<div class="cbi-section cbi-tblsection">
 
@@ -1165,6 +1177,11 @@
 	</div>
 </div>
 <style>
+	.user-status-content .cbi-tblsection {
+		margin-top: 0;
+		padding-top: 0;
+	}
+
     .tab-container {
         margin-top: 20px;
     }
@@ -1305,17 +1322,17 @@
 		display: flex;
 		justify-content: flex-end;
 		align-items: center;
-		gap: 8px;
-		margin: 6px 0 10px;
+		gap: 6px;
+		margin: 0 0 10px;
 	}
 
 	.view-mode-btn {
-		width: 34px;
-		height: 34px;
+		width: 23px;
+		height: 23px;
 		border: 1px solid var(--border-color-medium, #d1d5db);
 		background: var(--background-color-high, #fff);
 		color: var(--text-color-medium, #6b7280);
-		border-radius: 8px;
+		border-radius: 6px;
 		cursor: pointer;
 		display: inline-flex;
 		align-items: center;
@@ -1337,40 +1354,40 @@
 	.view-mode-icon {
 		position: relative;
 		display: block;
-		width: 17px;
-		height: 17px;
+		width: 11px;
+		height: 11px;
 	}
 
 	.view-mode-icon-list::before {
 		content: "";
 		position: absolute;
-		left: 2px;
-		top: 3px;
-		width: 13px;
-		height: 2px;
+		left: 1px;
+		top: 2px;
+		width: 9px;
+		height: 1px;
 		border-radius: 2px;
 		background: currentColor;
-		box-shadow: 0 5px 0 currentColor, 0 10px 0 currentColor;
+		box-shadow: 0 4px 0 currentColor, 0 8px 0 currentColor;
 	}
 
 	.view-mode-icon-card::before,
 	.view-mode-icon-card::after {
 		content: "";
 		position: absolute;
-		width: 7px;
-		height: 7px;
-		border-radius: 2px;
+		width: 5px;
+		height: 5px;
+		border-radius: 1px;
 		background: currentColor;
 	}
 
 	.view-mode-icon-card::before {
-		left: 2px;
-		top: 2px;
+		left: 1px;
+		top: 1px;
 	}
 
 	.view-mode-icon-card::after {
-		right: 2px;
-		bottom: 2px;
+		right: 1px;
+		bottom: 1px;
 	}
 
 	.user-table-wrapper {
@@ -1609,14 +1626,22 @@
 
 	@media (max-width: 480px) {
 		.user-card-line {
-			flex-wrap: wrap;
+			flex-wrap: nowrap;
+			align-items: center;
 			gap: 6px;
 		}
 
-		.user-card-label,
+		.user-card-label {
+			max-width: 46%;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+
 		.user-card-value {
-			width: 100%;
-			text-align: left;
+			flex: 1 1 auto;
+			min-width: 0;
+			text-align: right;
 		}
 	}
 

@@ -2,9 +2,34 @@
 <link rel="stylesheet" href="<%=resource%>/css/common.css">
 <script src="<%=resource%>/jquery-3.7.1.min.js"></script>
 <script src="<%=resource%>/common.js"></script>
+<style>
+  .work-mode-warning {
+    display: none;
+    margin: 0 0 14px;
+    padding: 10px 14px 10px 30px;
+    border: 1px solid rgba(239, 68, 68, 0.45);
+    border-radius: 6px;
+    background: rgba(239, 68, 68, 0.10);
+    color: #dc2626;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  .work-mode-warning li {
+    margin: 2px 0;
+  }
+  [data-darkmode="true"] .work-mode-warning {
+    border-color: rgba(248, 113, 113, 0.55);
+    background: rgba(127, 29, 29, 0.26);
+    color: #fca5a5;
+  }
+</style>
 <div class="fwx-form-card">
   <div class="form-title"><%:Work Mode%></div>
-  <div class="form-desc"><%:Work mode affects behavior management and Internet audit. Please select the correct mode. Note that downstream traffic cannot be counted in bypass mode.%></div>
+  <div class="form-desc"><%:Work mode affects behavior management and Internet audit. Please select the correct mode.%></div>
+  <ol class="work-mode-warning" id="work-mode-warning">
+    <li><%:Bypass mode cannot count downstream traffic because traffic is directly forwarded to terminals at Layer 2 through the gateway.%></li>
+    <li><%:In bypass mode, it is recommended to disable IPv6 on terminals to prevent terminals from forwarding directly to the main router through IPv6.%></li>
+  </ol>
 
   <div class="form-row">
     <label class="form-label"><%:Work Mode%></label>
@@ -39,11 +64,17 @@
     }
   }
 
+  function updateWorkModeWarning(workMode) {
+    $('#work-mode-warning').toggle(parseInt(workMode, 10) === 1);
+  }
+
   function refresh() {
     $('#wm-tip').text(_Loading);
     $.getJSON(apiGet, function(resp){
       const d = (resp && resp.data) || {};
-      $('#work-mode').val((d.work_mode === 1) ? "1" : "0");
+      const workMode = parseInt(d.work_mode, 10) === 1 ? "1" : "0";
+      $('#work-mode').val(workMode);
+      updateWorkModeWarning(workMode);
       $('#wm-tip').text('');
     }).fail(function(){
       $('#wm-tip').text(_LoadFailed);
@@ -60,6 +91,7 @@
     }).done(function(resp){
       if (resp && (resp.code === 0 || resp.code === 2000)) {
         showModal(_SavedSuccessfully, true);
+        updateWorkModeWarning(payload.work_mode);
       } else {
         showModal(_SaveFailed, false);
       }
@@ -71,9 +103,11 @@
   }
 
   $('#wm-refresh').on('click', refresh);
+  $('#work-mode').on('change', function() {
+    updateWorkModeWarning(this.value);
+  });
   $('#wm-save').on('click', save);
   $(refresh);
 })();
 </script>
 <%+footer%>
-

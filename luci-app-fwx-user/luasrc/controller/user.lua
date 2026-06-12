@@ -342,7 +342,7 @@ function get_parental_control_detail()
 		luci.http.write_json(resp_obj.data)
 	else
 		luci.http.write_json({
-			pc_status = "Unrestricted",
+			pc_status = "unlimited",
 			pc_status_key = "unlimited",
 			appfilter_rules = {},
 			macfilter_rules = {}

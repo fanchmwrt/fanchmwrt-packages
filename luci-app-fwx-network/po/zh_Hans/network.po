@@ -185,6 +185,12 @@ msgstr "工作模式"
 msgid "Configure network work mode"
 msgstr "配置网络工作模式"
 
-msgid "Work mode affects behavior management and Internet audit. Please select the correct mode. Note that downstream traffic cannot be counted in bypass mode."
-msgstr "工作模式影响行为管理和上网审计，请正确选择模式，注意旁路模式下无法统计下行流量"
+msgid "Work mode affects behavior management and Internet audit. Please select the correct mode."
+msgstr "工作模式影响行为管理和上网审计，请正确选择模式"
+
+msgid "Bypass mode cannot count downstream traffic because traffic is directly forwarded to terminals at Layer 2 through the gateway."
+msgstr "旁路模式无法统计下行流量，因为流量是通过网关直接二层转发到了终端。"
+
+msgid "In bypass mode, it is recommended to disable IPv6 on terminals to prevent terminals from forwarding directly to the main router through IPv6."
+msgstr "旁路模式下建议关闭终端的IPv6，防止终端走IPv6直接转发到主路由。"
 

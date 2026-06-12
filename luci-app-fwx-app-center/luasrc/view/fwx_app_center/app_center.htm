@@ -26,10 +26,50 @@
 .app-center-wrap { padding: 0; }
 .app-center-intro { margin-bottom: 10px; }
 .app-center-intro-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
     font-size: 18px;
     font-weight: 600;
     line-height: 1.35;
     color: var(--text-color-highest, #111);
+}
+.app-center-title-help {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #3b82f6;
+    color: #fff;
+    font-size: 12px;
+    line-height: 16px;
+    cursor: help;
+    outline: none;
+}
+.app-center-title-help-text {
+    position: absolute;
+    left: 50%;
+    bottom: 24px;
+    z-index: 20;
+    display: none;
+    min-width: 260px;
+    max-width: 360px;
+    padding: 8px 10px;
+    border-radius: 4px;
+    background: rgba(17, 24, 39, 0.96);
+    color: #fff;
+    font-size: 12px;
+    font-weight: normal;
+    line-height: 1.5;
+    transform: translateX(-50%);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+}
+.app-center-title-help:hover .app-center-title-help-text,
+.app-center-title-help:focus .app-center-title-help-text {
+    display: block;
 }
 .app-center-intro-desc {
     margin-top: 4px;
@@ -40,8 +80,21 @@
 [data-darkmode="true"] .app-center-intro-title {
     color: rgba(255, 255, 255, 0.95);
 }
+[data-darkmode="true"] .app-center-title-help {
+    background: #60a5fa;
+    color: #0f172a;
+}
 [data-darkmode="true"] .app-center-intro-desc {
     color: rgba(255, 255, 255, 0.74);
+}
+@media (max-width: 900px) {
+    .app-center-title-help-text {
+        left: auto;
+        right: 0;
+        min-width: 220px;
+        max-width: calc(100vw - 48px);
+        transform: none;
+    }
 }
 .app-center-toolbar { display: flex; justify-content: flex-start; margin-bottom: 10px; }
 .app-center-refresh-btn {
@@ -800,7 +853,12 @@
 <div class="fwx-form-card app-center-outer">
     <div class="app-center-wrap">
         <div class="app-center-intro">
-            <div class="app-center-intro-title"><%:App Center%></div>
+            <div class="app-center-intro-title">
+                <span><%:App Center%></span>
+                <span class="app-center-title-help" tabindex="0">?
+                    <span class="app-center-title-help-text"><%:If the LuCI page app is not displayed after installation, log in again to check. The menu may be cached.%></span>
+                </span>
+            </div>
             <div class="app-center-intro-desc"><%:Install and manage applications%></div>
         </div>
         <div class="app-center-toolbar">

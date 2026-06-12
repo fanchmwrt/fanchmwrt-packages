@@ -4,6 +4,9 @@ msgstr "应用中心"
 msgid "Install and manage applications"
 msgstr "安装和管理应用"
 
+msgid "If the LuCI page app is not displayed after installation, log in again to check. The menu may be cached."
+msgstr "如果LuCI页面应用安装后没有显示，可以重新登录后查看，可能存在缓存。"
+
 msgid "Install"
 msgstr "安装"
 

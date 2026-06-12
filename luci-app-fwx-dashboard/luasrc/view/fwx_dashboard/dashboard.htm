@@ -1338,6 +1338,7 @@
     var _Unknown = '<%:Unknown%>';
     var _OnlineApp = '<%:Online App%>';
     var _OnlineUser = '<%:Online User%>';
+    var _User = '<%:User%>';
     var _Connections = '<%:Connections%>';
     var _TodayTraffic = '<%:Today Traffic%>';
     var _RealtimeTraffic = '<%:Real-time Traffic%>';
@@ -1553,6 +1554,7 @@
                     var json = typeof data === 'string' ? JSON.parse(data) : data;
                     if(json && json.users && Array.isArray(json.users)) {
                         activeUsersData = json.users;
+                        cacheUsersByMac(activeUsersData);
                         renderClientList();
                     } else {
                         activeUsersData = [];
@@ -2812,6 +2814,7 @@
 
     var $tbody = $('#client-body');
     var activeUsersData = [];
+    var activeUsersByMac = {};
     
     function formatRate(bytesPerSec) {
         if (bytesPerSec < 1024) {
@@ -2868,6 +2871,71 @@
         }
         
         return formatUserName(rawName, user.mac || '');
+    }
+
+    function normalizeMacKey(mac) {
+        return mac ? String(mac).trim().toLowerCase() : '';
+    }
+
+    function cacheUsersByMac(users) {
+        if (!Array.isArray(users)) {
+            return;
+        }
+
+        users.forEach(function(user) {
+            var key = normalizeMacKey(user && user.mac);
+            if (!key) {
+                return;
+            }
+
+            activeUsersByMac[key] = $.extend({}, activeUsersByMac[key] || {}, user);
+        });
+    }
+
+    function getCachedUserByMac(mac) {
+        var key = normalizeMacKey(mac);
+        return key ? (activeUsersByMac[key] || null) : null;
+    }
+
+    function truncateMiddle(value, maxLength) {
+        var text = value ? String(value).trim() : '';
+        maxLength = maxLength || 16;
+
+        if (text.length <= maxLength) {
+            return text;
+        }
+
+        var keepLength = maxLength - 3;
+        var frontLength = Math.ceil(keepLength / 2);
+        var backLength = keepLength - frontLength;
+        return text.substring(0, frontLength) + '...' + text.substring(text.length - backLength);
+    }
+
+    function formatActiveAppUser(app) {
+        app = app || {};
+        var mac = app.mac ? String(app.mac).trim() : '';
+        var cachedUser = getCachedUserByMac(mac) || {};
+        var nickname = app.nickname || cachedUser.nickname || '';
+        var hostname = app.hostname || cachedUser.hostname || '';
+        var rawName = '';
+
+        if (nickname && String(nickname).trim() !== '') {
+            rawName = String(nickname).trim();
+        } else if (hostname && String(hostname).trim() !== '') {
+            rawName = String(hostname).trim();
+        }
+
+        if (rawName) {
+            return {
+                display: truncateMiddle(rawName, 16) + (mac ? ' (' + mac + ')' : ''),
+                full: rawName + (mac ? ' (' + mac + ')' : '')
+            };
+        }
+
+        return {
+            display: mac || '--',
+            full: mac || '--'
+        };
     }
     
     function getUserDisplayName(user) {
@@ -2966,9 +3034,10 @@
             var $tooltip = $('<div>').addClass('tooltip tooltip-top tooltip-arrow-center tooltip-center-x');
             
             var timestamp = app.timestamp ? formatTime(app.timestamp * 1000) : formatTime(Date.now());
+            var userInfo = formatActiveAppUser(app);
             var tooltipHtml = 
                 '<div class="tooltip-row"><span class="tooltip-label">' + _AccessTime + ':</span><span class="tooltip-value">'+timestamp+'</span></div>';
-            if(app.mac) tooltipHtml += '<div class="tooltip-row"><span class="tooltip-label">' + _MACAddress + ':</span><span class="tooltip-value">'+app.mac+'</span></div>';
+            tooltipHtml += '<div class="tooltip-row"><span class="tooltip-label">' + _User + ':</span><span class="tooltip-value" title="' + escapeHtml(userInfo.full) + '">' + escapeHtml(userInfo.display) + '</span></div>';
             if(app.src_ip) tooltipHtml += '<div class="tooltip-row"><span class="tooltip-label">' + _SourceIP + ':</span><span class="tooltip-value">'+app.src_ip+'</span></div>';
             if(app.dst_ip) tooltipHtml += '<div class="tooltip-row"><span class="tooltip-label">' + _DestinationIP + ':</span><span class="tooltip-value">'+app.dst_ip+'</span></div>';
             if(app.protocol) tooltipHtml += '<div class="tooltip-row"><span class="tooltip-label">' + _Protocol + ':</span><span class="tooltip-value">'+app.protocol+'</span></div>';
@@ -3085,16 +3154,11 @@
     var isFirstRender = true; 
     
     var userColors = [
-        '#34d399', 
-        '#a78bfa',  
-        '#60a5fa',  
-        '#fbbf24',  
-        '#34d399', 
-        '#60a5fa', 
-        '#8b5cf6',  
-        '#a78bfa', 
-        '#c084fc', 
-        '#818cf8' 
+        '#38bdf8',
+        '#f97316',
+        '#c084fc',
+        '#ec4899',
+        '#84cc16'
     ];
     
     function getUserColor(mac) {
@@ -3102,7 +3166,7 @@
         
         var hash = 0;
         for (var i = 0; i < mac.length; i++) {
-            hash += mac.charCodeAt(i);
+            hash = ((hash * 31) + mac.charCodeAt(i)) >>> 0;
         }
         
         var colorIndex = hash % userColors.length;
@@ -3377,6 +3441,7 @@
         }
         
         var users = data.users || [];
+        cacheUsersByMac(users);
         var names = [];
         var upValues = [];
         var downValues = [];
