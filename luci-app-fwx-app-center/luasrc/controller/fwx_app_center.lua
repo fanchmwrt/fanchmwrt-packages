@@ -362,6 +362,17 @@ local function get_release_date_for_app_center()
 	return ""
 end
 
+local function resolve_download_release(release)
+	local value = trim_str(release or "")
+	if value:upper() ~= "SNAPSHOT" then
+		return value
+	end
+
+	local release_date = get_release_date_for_app_center()
+	log("resolve_download_release: release=SNAPSHOT, release_date=" .. tostring(release_date))
+	return trim_str(release_date)
+end
+
 local function app_boot_data_path(name)
 	return APP_CENTER_APP_LIST .. "/" .. name .. "/boot_data"
 end
@@ -1757,8 +1768,9 @@ function api_install_app()
 
 	local runtime_arch, runtime_release = get_arch_and_version()
 	local release = trim_str(runtime_release or cached._version or "")
+	local download_release = resolve_download_release(release)
 	local arch = trim_str(runtime_arch or cached._arch or "")
-	if release == "" or arch == "" then
+	if download_release == "" or arch == "" then
 		write_app_error(4001, "failed to get release or arch", name, pkg)
 		return
 	end
@@ -1767,7 +1779,7 @@ function api_install_app()
 		file_name = name .. ".fpk"
 	end
 	base_url = base_url:gsub("/+$", "")
-	local url = base_url .. "/fpk/" .. release .. "/" .. arch .. "/" .. file_name
+	local url = base_url .. "/fpk/" .. download_release .. "/" .. arch .. "/" .. file_name
 	local expected_sha = trim_str(pkg.SHA256sum or "")
 	local pkg_version = trim_str(pkg.Version or "")
 
