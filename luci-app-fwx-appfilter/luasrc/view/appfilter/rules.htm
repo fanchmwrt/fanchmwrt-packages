@@ -509,6 +509,20 @@
         border-radius: 4px;
         flex-shrink: 0;
     }
+    .app-icon-letter {
+        width: 20px;
+        height: 20px;
+        border-radius: 4px;
+        flex-shrink: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 700;
+        color: #ffffff;
+        line-height: 1;
+        user-select: none;
+    }
     
     .app-item label span {
         display: flex;
@@ -686,6 +700,14 @@ $(document).ready(function() {
     var classListLoaded = false; // 标记分类列表是否已加载
     var rulesLoaded = false; // 标记规则列表是否已加载
     
+    var _ICON_COLORS = ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#f97316','#ec4899','#84cc16','#6366f1'];
+    function appLetterColor(name) {
+        if (!name) return _ICON_COLORS[0];
+        var h = 0;
+        for (var k = 0; k < name.length; k++) h = name.charCodeAt(k) + ((h << 5) - h);
+        return _ICON_COLORS[Math.abs(h) % _ICON_COLORS.length];
+    }
+
     init();
     
     function init() {
@@ -1801,11 +1823,20 @@ $(document).ready(function() {
                     $checkbox.prop('checked', true);
                 }
                 
-                var $icon = $('<img>').attr({
-                    src: hasIcon ? '<%=resource%>/app_icons/' + appId + '.png' : '<%=resource%>/app_icons/default.png',
-                    alt: appName
-                });
-                
+                var $icon = $('<span>').addClass('app-icon-letter')
+                    .css('background', appLetterColor(appName))
+                    .text(appName.charAt(0).toUpperCase() || '?');
+                if (hasIcon) {
+                    var _iconSrc = '<%=resource%>/app_icons/' + encodeURIComponent(appId) + '.png';
+                    var _loader = new Image();
+                    _loader.onload = (function($el, src, alt) {
+                        return function() {
+                            $el.replaceWith($('<img>').attr({src: src, alt: alt}));
+                        };
+                    })($icon, _iconSrc, appName);
+                    _loader.src = _iconSrc;
+                }
+
                 var $label = $('<label>');
                 var $textSpan = $('<span>').text(appName);
                 $label.append($icon).append($textSpan);

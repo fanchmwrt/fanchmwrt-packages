@@ -1,6 +1,5 @@
 module("luci.controller.user", package.seeall)
 local utl = require "luci.util"
-local uci = require "luci.model.uci"
 
 function index()
 	local page
@@ -68,73 +67,11 @@ function normalize_mac(mac)
 	return tostring(mac):gsub("^%s+", ""):gsub("%s+$", ""):upper()
 end
 
-function get_mac_blacklist_list_from_uci()
-	local cursor = uci.cursor()
-	local mac_list = cursor:get_list("mac_blacklist", "base", "mac_list")
-	if type(mac_list) == "string" then
-		mac_list = {mac_list}
-	elseif type(mac_list) ~= "table" then
-		mac_list = {}
-	end
-	cursor:unload("mac_blacklist")
-
-	local uniq = {}
-	local list = {}
-	for _, mac in ipairs(mac_list) do
-		local normalized_mac = normalize_mac(mac)
-		if normalized_mac ~= "" and not uniq[normalized_mac] then
-			uniq[normalized_mac] = true
-			table.insert(list, normalized_mac)
-		end
-	end
-	table.sort(list)
-	return list
-end
-
-function get_mac_blacklist_set_from_uci()
-	local mac_set = {}
-	local mac_list = get_mac_blacklist_list_from_uci()
-	for _, mac in ipairs(mac_list) do
-		mac_set[mac] = true
-	end
-	return mac_set
-end
-
-function save_mac_blacklist_list_to_uci(mac_list)
-	local cursor = uci.cursor()
-	if not cursor:get("mac_blacklist", "base") then
-		cursor:section("mac_blacklist", "settings", "base", {})
-	end
-	cursor:delete("mac_blacklist", "base", "mac_list")
-	if type(mac_list) == "table" and #mac_list > 0 then
-		table.sort(mac_list)
-		cursor:set("mac_blacklist", "base", "mac_list", mac_list)
-	end
-	cursor:save("mac_blacklist")
-	cursor:commit("mac_blacklist")
-	cursor:unload("mac_blacklist")
-end
-
-function get_all_users_map_for_blacklist()
+function call_fwx_common(api, data)
 	local req_obj = {}
-	req_obj.api = "get_all_users"
-	req_obj.data = {
-		flag = 2,
-		page = 0,
-		page_size = 1024
-	}
-
-	local resp_obj = utl.ubus("fwx", "common", req_obj)
-	local user_map = {}
-	if resp_obj and resp_obj.code == 2000 and resp_obj.data and type(resp_obj.data.list) == "table" then
-		for _, user in ipairs(resp_obj.data.list) do
-			local mac = normalize_mac(user.mac)
-			if mac ~= "" then
-				user_map[mac] = user
-			end
-		end
-	end
-	return user_map
+	req_obj.api = api
+	req_obj.data = data or {}
+	return utl.ubus("fwx", "common", req_obj)
 end
 
 function user_status()
@@ -211,13 +148,6 @@ function get_all_users()
 	local resp_obj = utl.ubus("fwx", "common", req_obj)
 	
 	if resp_obj and resp_obj.code == 2000 and resp_obj.data then
-		local blacklist_set = get_mac_blacklist_set_from_uci()
-		if type(resp_obj.data.list) == "table" then
-			for _, user in ipairs(resp_obj.data.list) do
-				local mac = normalize_mac(user.mac)
-				user.in_blacklist = blacklist_set[mac] and 1 or 0
-			end
-		end
 		luci.http.write_json({data = resp_obj.data})
 	else
 		luci.http.write_json({data = resp_obj or {}})
@@ -245,24 +175,12 @@ end
 function get_mac_blacklist()
 	luci.http.prepare_content("application/json")
 
-	local mac_list = get_mac_blacklist_list_from_uci()
-	local user_map = get_all_users_map_for_blacklist()
-	local list = {}
-
-	for _, mac in ipairs(mac_list) do
-		local user = user_map[mac] or {}
-		table.insert(list, {
-			mac = mac,
-			hostname = user.hostname or "--",
-			nickname = user.nickname or "--"
-		})
+	local resp_obj = call_fwx_common("get_mac_blacklist", {})
+	if resp_obj and resp_obj.code == 2000 and resp_obj.data then
+		luci.http.write_json({code = 0, data = resp_obj.data, message = "success"})
+	else
+		luci.http.write_json({code = 1, data = {list = {}}, message = "failed"})
 	end
-
-	luci.http.write_json({
-		code = 0,
-		data = { list = list },
-		message = "success"
-	})
 end
 
 function add_mac_blacklist()
@@ -293,20 +211,12 @@ function add_mac_blacklist()
 		return
 	end
 
-	local old_list = get_mac_blacklist_list_from_uci()
-	local old_set = {}
-	for _, item in ipairs(old_list) do
-		old_set[item] = true
+	local resp_obj = call_fwx_common("add_mac_blacklist", {mac_list = mac_list})
+	if resp_obj and resp_obj.code == 2000 then
+		luci.http.write_json({code = 0, message = "success"})
+	else
+		luci.http.write_json({code = 1, message = "failed"})
 	end
-	for _, item in ipairs(mac_list) do
-		if not old_set[item] then
-			old_set[item] = true
-			table.insert(old_list, item)
-		end
-	end
-
-	save_mac_blacklist_list_to_uci(old_list)
-	luci.http.write_json({code = 0, message = "success"})
 end
 
 function del_mac_blacklist()
@@ -317,16 +227,12 @@ function del_mac_blacklist()
 		return
 	end
 
-	local old_list = get_mac_blacklist_list_from_uci()
-	local new_list = {}
-	for _, item in ipairs(old_list) do
-		if item ~= mac then
-			table.insert(new_list, item)
-		end
+	local resp_obj = call_fwx_common("del_mac_blacklist", {mac = mac})
+	if resp_obj and resp_obj.code == 2000 then
+		luci.http.write_json({code = 0, message = "success"})
+	else
+		luci.http.write_json({code = 1, message = "failed"})
 	end
-
-	save_mac_blacklist_list_to_uci(new_list)
-	luci.http.write_json({code = 0, message = "success"})
 end
 
 function get_parental_control_detail()

@@ -795,6 +795,19 @@
         display: block;
         opacity: 1;
     }
+    .app-icon-letter {
+        width: 100%;
+        height: 100%;
+        border-radius: inherit;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        font-weight: 700;
+        color: #ffffff;
+        line-height: 1;
+        user-select: none;
+    }
     .app-icon-wrap {
         width: 36px;
         height: 36px;
@@ -3008,28 +3021,35 @@
             return;
         }
         
+        var _APP_LETTER_COLORS = ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#f97316','#ec4899','#84cc16','#6366f1'];
+        function appLetterColor(name) {
+            if (!name) return _APP_LETTER_COLORS[0];
+            var hash = 0;
+            for (var i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+            return _APP_LETTER_COLORS[Math.abs(hash) % _APP_LETTER_COLORS.length];
+        }
+
         var displayList = appList.slice(0, 10);
         displayList.forEach(function(app){
             var $appItem = $('<div>').addClass('app-item');
             var $iconWrap = $('<span>').addClass('app-icon-wrap')
                 .attr('title', app.name || 'app');
             var appId = (app && app.id !== undefined && app.id !== null) ? String(app.id).trim() : '';
-            var defaultIcon = '<%=resource%>/app_icons/default.png';
-            var $icon = $('<img>').addClass('app-icon')
-                .attr('src', defaultIcon)
-                .attr('alt', app.name || 'app');
+            var appDisplayName = app.name || ('app' + app.id) || '?';
+            var $letterIcon = $('<div>').addClass('app-icon-letter')
+                .css('background', appLetterColor(appDisplayName))
+                .text(appDisplayName.charAt(0).toUpperCase());
+            $iconWrap.append($letterIcon);
             if (appId) {
                 var iconSrc = '<%=resource%>/app_icons/' + encodeURIComponent(appId) + '.png';
                 var iconLoader = new Image();
-                iconLoader.onload = function(){
-                    $icon.attr('src', iconSrc);
-                };
-                iconLoader.onerror = function(){
-                    $icon.attr('src', defaultIcon);
-                };
+                iconLoader.onload = (function($wrap, src, alt) {
+                    return function() {
+                        $wrap.empty().append($('<img>').addClass('app-icon').attr('src', src).attr('alt', alt));
+                    };
+                })($iconWrap, iconSrc, appDisplayName);
                 iconLoader.src = iconSrc;
             }
-            $iconWrap.append($icon);
             var $nameSpan = $('<div>').addClass('app-name').text(app.name || ('app' + app.id));
             var $tooltip = $('<div>').addClass('tooltip tooltip-top tooltip-arrow-center tooltip-center-x');
             

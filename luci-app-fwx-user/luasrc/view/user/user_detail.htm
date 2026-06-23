@@ -703,6 +703,15 @@
 		);
 	}
 
+	var _ICON_COLORS = ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#f97316','#ec4899','#84cc16','#6366f1'];
+	var _iconStatusCache = {};
+	function appLetterColor(name) {
+		if (!name) return _ICON_COLORS[0];
+		var h = 0;
+		for (var i = 0; i < name.length; i++) h = name.charCodeAt(i) + ((h << 5) - h);
+		return _ICON_COLORS[Math.abs(h) % _ICON_COLORS.length];
+	}
+
 	function render_visit_list_table(data) {
 		var tb = document.getElementById('visit_list_table');
 		var visit_list = data.list;
@@ -717,13 +726,42 @@
 				var tr = tb.insertRow(-1);
 				tr.className = 'tr';
 
-				var appIconPath = '<%=resource%>/app_icons/';
-				var defaultIconPath = '<%=resource%>/app_icons/default.png';
-				tr.insertCell(-1).innerHTML = 
-					'<div style="height: 24px; display: flex; align-items: center;">' +
-						'<img src="' + appIconPath + visit_list[i].id + '.png" alt="' + visit_list[i].name + '" title="' + visit_list[i].name + '" style="width: 20px; height: 20px; border-radius: 5px; margin-right: 4px;" onerror="this.src=\'' + defaultIconPath + '\'">' +
-						'<span>' + visit_list[i].name + '</span>' +
-					'</div>';
+				var appName = visit_list[i].name || '';
+				var appId = String(visit_list[i].id || '');
+				var $iconCell = $(tr.insertCell(-1));
+				var $div = $('<div>').css({height:'24px', display:'flex', alignItems:'center'});
+				var iconSrc = appId ? '<%=resource%>/app_icons/' + encodeURIComponent(appId) + '.png' : '';
+				var $iconSpan;
+				if (appId && _iconStatusCache[appId] === 'loaded') {
+					$iconSpan = $('<img>').attr({src:iconSrc, alt:appName}).css({
+						width:'20px', height:'20px', borderRadius:'5px',
+						marginRight:'4px', objectFit:'cover', display:'block'
+					});
+				} else {
+					$iconSpan = $('<span>').css({
+						width:'20px', height:'20px', borderRadius:'5px', marginRight:'4px',
+						display:'inline-flex', alignItems:'center', justifyContent:'center',
+						background: appLetterColor(appName), color:'#fff',
+						fontSize:'11px', fontWeight:'700', flexShrink:0, lineHeight:1
+					}).text((appName || '?').charAt(0).toUpperCase());
+					if (appId && _iconStatusCache[appId] !== 'failed') {
+						var loader = new Image();
+						loader.onload = (function($sp, src, alt, id) {
+							return function() {
+								_iconStatusCache[id] = 'loaded';
+								$sp.replaceWith($('<img>').attr({src:src, alt:alt}).css({
+									width:'20px', height:'20px', borderRadius:'5px',
+									marginRight:'4px', objectFit:'cover', display:'block',
+									border:'none', boxShadow:'none'
+								}));
+							};
+						})($iconSpan, iconSrc, appName, appId);
+						loader.onerror = (function(id) { return function() { _iconStatusCache[id] = 'failed'; }; })(appId);
+						loader.src = iconSrc;
+					}
+				}
+				$div.append($iconSpan).append($('<span>').text(appName));
+				$iconCell.append($div);
 
 				var first_time_date = new Date(visit_list[i].ft * 1000); // Assuming first_time is in seconds
 				var first_time_str = first_time_date.toLocaleString(); // Convert to local date string

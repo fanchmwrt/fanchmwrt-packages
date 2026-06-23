@@ -421,7 +421,7 @@ msgid "App Restricted"
 msgstr "应用受限"
 
 msgid "Disconnected"
-msgstr "已断网"
+msgstr "未联网"
 
 msgid "Not Matched"
 msgstr "未匹配"
