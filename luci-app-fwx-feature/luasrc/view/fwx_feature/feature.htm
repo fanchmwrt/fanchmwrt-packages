@@ -95,7 +95,9 @@
 .app-item {display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid var(--border-color-medium, #d1d5db);border-radius:6px;background:var(--background-color-low, #f5f5f5);font-size:13px;cursor:default;transition:all 0.2s ease;}
 .app-item:hover {background:var(--background-color-medium, #eeeeee);border-color:var(--border-color-high, #9ca3af);transform:translateY(-1px);}
 .app-item img {width:20px;height:20px;object-fit:contain;border-radius:4px;}
+.app-icon-letter {width:20px;height:20px;border-radius:4px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#ffffff;line-height:1;user-select:none;}
 .app-item span {color:var(--text-color-medium, #6b7280);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100px;}
+.app-item .app-icon-letter {color:#ffffff;max-width:20px;min-width:20px;overflow:hidden;text-overflow:clip;}
 @media (min-width: 800px) {
 	.app-items {grid-template-columns:repeat(6,1fr);}
 }
@@ -128,6 +130,15 @@
 var pollTimer = null;
 var pollTimeout = null;
 var classListLoaded = false;
+var _ICON_COLORS = ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4','#f97316','#ec4899','#84cc16','#6366f1'];
+var _iconStatusCache = {};
+
+	function appLetterColor(name) {
+		if (!name) return _ICON_COLORS[0];
+		var h = 0;
+		for (var i = 0; i < name.length; i++) h = name.charCodeAt(i) + ((h << 5) - h);
+		return _ICON_COLORS[Math.abs(h) % _ICON_COLORS.length];
+	}
 
 	function stopPoll() {
 		if (pollTimer) {
@@ -293,13 +304,25 @@ var classListLoaded = false;
 					var hasIcon = parts[2] === '1';
 					
 					var $appItem = $('<div class="app-item"></div>');
-					
-					var iconSrc = hasIcon ? '<%=resource%>/app_icons/' + appId + '.png' : '<%=resource%>/app_icons/default.png';
-					var $icon = $('<img>').attr({
-						src: iconSrc,
-						alt: appName,
-						onerror: 'this.src="<%=resource%>/app_icons/default.png"'
-					});
+					var iconSrc = appId ? '<%=resource%>/app_icons/' + encodeURIComponent(appId) + '.png' : '';
+					var $icon = $('<span>').addClass('app-icon-letter')
+						.css('background', appLetterColor(appName))
+						.text((appName || '?').charAt(0).toUpperCase());
+					if (hasIcon && appId && _iconStatusCache[appId] !== 'failed') {
+						if (_iconStatusCache[appId] === 'loaded') {
+							$icon = $('<img>').attr({src: iconSrc, alt: appName});
+						} else {
+							var loader = new Image();
+							loader.onload = (function($el, src, alt, id) {
+								return function() {
+									_iconStatusCache[id] = 'loaded';
+									$el.replaceWith($('<img>').attr({src: src, alt: alt}));
+								};
+							})($icon, iconSrc, appName, appId);
+							loader.onerror = (function(id) { return function() { _iconStatusCache[id] = 'failed'; }; })(appId);
+							loader.src = iconSrc;
+						}
+					}
 					
 					var $name = $('<span></span>').text(appName);
 					
