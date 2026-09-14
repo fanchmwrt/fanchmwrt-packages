@@ -619,6 +619,60 @@
     #add-rule-modal .modal-close:hover {
         color: #ccc;
     }
+
+    #add-rule-modal .modal-content {
+        box-sizing: border-box;
+        width: 900px;
+        max-width: calc(100% - 24px);
+        max-height: calc(100vh - 24px);
+        background: var(--background-color-high, #fff);
+        color: var(--text-color-high, #1f2937);
+        border: 1px solid var(--border-color-low, #d1d5db);
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.22);
+    }
+
+    #add-rule-modal .modal-content h3,
+    #add-rule-modal .modal-close,
+    #add-rule-modal .form-group label,
+    #add-rule-modal .category-name {
+        color: var(--text-color-high, #1f2937);
+    }
+
+    #add-rule-modal .modal-close:hover,
+    #add-rule-modal .category-count,
+    #add-rule-modal .category-select-all-container label {
+        color: var(--text-color-medium, #6b7280);
+    }
+
+    #add-rule-modal .rule-form {
+        background: transparent;
+        border-color: var(--border-color-low, #d1d5db);
+    }
+
+    #add-rule-modal .form-group input[type="text"],
+    #add-rule-modal .form-group input[type="time"],
+    #add-rule-modal .form-group select {
+        background: var(--background-color-high, #fff);
+        color: var(--text-color-high, #1f2937);
+        border-color: var(--border-color-medium, #d1d5db);
+    }
+
+    #add-rule-modal .form-group select option {
+        background: var(--background-color-high, #fff);
+        color: var(--text-color-high, #1f2937);
+    }
+
+    #add-rule-modal .time-rule-item,
+    #add-rule-modal .app-selection-container,
+    #add-rule-modal .category-header {
+        background: var(--background-color-low, #f5f5f5);
+        color: var(--text-color-high, #1f2937);
+        border-color: var(--border-color-low, #d1d5db);
+    }
+
+    #add-rule-modal .form-group > div[style*="color: #999"] {
+        color: var(--text-color-medium, #6b7280) !important;
+    }
 </style>
 
 <script type="text/javascript">//<![CDATA[
@@ -709,7 +763,7 @@ $(document).ready(function() {
     }
 
     init();
-    
+
     function init() {
         loadAllUsers();
         loadClassList();
@@ -1810,7 +1864,7 @@ $(document).ready(function() {
                 var parts = app.split(',');
                 var appId = parseInt(parts[0]);
                 var appName = parts[1] || 'Unknown';
-                var hasIcon = parts[2] === '1';
+                var hasIcon = parts[2] !== '0';
                 
                 var $appItem = $('<div>').addClass('app-item');
                 var $checkbox = $('<input>').attr({

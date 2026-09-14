@@ -64,8 +64,9 @@
     }
     
     .modal-content {
-        background-color: #2d2d2d;
-        color: #ffffff;
+        background-color: var(--background-color-high, #fff);
+        color: var(--text-color-high, #1f2937);
+        border: 1px solid var(--border-color-low, #d1d5db);
         border-radius: 8px;
         width: calc(100vw - 32px);
         max-width: 700px;
@@ -82,8 +83,8 @@
         font-size: 20px;
         font-weight: bold;
         padding: 20px 24px 14px;
-        border-bottom: 1px solid #444;
-        color: #fff;
+        border-bottom: 1px solid var(--border-color-low, #d1d5db);
+        color: var(--text-color-high, #1f2937);
         flex: 0 0 auto;
     }
     
@@ -92,22 +93,22 @@
         min-height: 180px;
         overflow-y: auto;
         margin: 0 24px;
-        border: 1px solid #555;
+        border: 1px solid var(--border-color-low, #d1d5db);
         border-radius: 4px;
-        background-color: #1e1e1e;
+        background-color: var(--background-color-high, #fff);
     }
     
     .user-item {
         padding: 12px;
-        border-bottom: 1px solid #444;
+        border-bottom: 1px solid var(--border-color-low, #d1d5db);
         display: flex;
         align-items: center;
         cursor: pointer;
-        background-color: #1e1e1e;
+        background-color: var(--background-color-high, #fff);
     }
     
     .user-item:hover {
-        background-color: #2a2a2a;
+        background-color: var(--background-color-low, #f5f5f5);
     }
     
     .user-item:last-child {
@@ -125,13 +126,13 @@
     
     .user-mac {
         font-weight: bold;
-        color: #fff;
+        color: var(--text-color-high, #1f2937);
         margin-bottom: 4px;
     }
     
     .user-details {
         font-size: 13px;
-        color: #ccc;
+        color: var(--text-color-medium, #6b7280);
     }
 
     .selection-toolbar {
@@ -144,7 +145,7 @@
     }
 
     .selection-stat {
-        color: #ccc;
+        color: var(--text-color-medium, #6b7280);
         font-size: 13px;
         white-space: nowrap;
     }
@@ -154,8 +155,8 @@
         justify-content: flex-end;
         gap: 10px;
         padding: 16px 24px;
-        border-top: 1px solid #444;
-        background-color: #2d2d2d;
+        border-top: 1px solid var(--border-color-low, #d1d5db);
+        background-color: var(--background-color-high, #fff);
         flex: 0 0 auto;
     }
     
@@ -180,8 +181,8 @@
     
     .modal-btn-secondary {
         background-color: transparent;
-        color: #ddd;
-        border: 1px solid #666;
+        color: var(--text-color-high, #1f2937);
+        border: 1px solid var(--border-color-medium, #d1d5db);
     }
     
     .modal-btn-secondary:hover {

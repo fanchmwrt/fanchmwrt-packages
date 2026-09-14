@@ -61,6 +61,15 @@ msgstr "更新列表"
 msgid "Updating..."
 msgstr "更新中..."
 
+msgid "Updating the list, please wait"
+msgstr "正在更新列表，请稍后"
+
+msgid "Updating system package repositories..."
+msgstr "正在更新系统软件源..."
+
+msgid "If updating the package repositories fails or is slow, modify the package source in Advanced Mode."
+msgstr "如果软件源更新失败或者较慢，请在高级模式中修改软件源。"
+
 msgid "List updated"
 msgstr "列表已更新"
 

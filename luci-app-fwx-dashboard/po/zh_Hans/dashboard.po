@@ -61,8 +61,11 @@ msgstr "近1小时"
 msgid "Today"
 msgstr "今日"
 
-msgid "User Traffic Top8"
-msgstr "用户流量Top8"
+msgid "Today's Traffic Ranking"
+msgstr "今日流量排行"
+
+msgid "Total Traffic"
+msgstr "总流量"
 
 msgid "Active Terminals Top8"
 msgstr "活跃终端Top8"
@@ -145,8 +148,8 @@ msgstr "磁盘空间"
 msgid "Boot Space"
 msgstr "Boot空间"
 
-msgid "Active URL"
-msgstr "活跃 URL"
+msgid "Active Websites"
+msgstr "活跃网址"
 
 msgid "No Data"
 msgstr "没有数据"

@@ -1628,6 +1628,8 @@ end
 function index()
 	entry({"admin", "fwx_app_center"}, template("fwx_app_center/app_center"), _("App Center"), 15).dependent = true
 	entry({"admin", "app_center_api", "get_app_list"}, call("api_get_app_list")).leaf = true
+	entry({"admin", "app_center_api", "get_system_sources_status"}, call("api_get_system_sources_status")).leaf = true
+	entry({"admin", "app_center_api", "update_system_sources"}, call("api_update_system_sources")).leaf = true
 	entry({"admin", "app_center_api", "get_installed_apps"}, call("api_get_installed_apps")).leaf = true
 	entry({"admin", "app_center_api", "install_app"}, call("api_install_app")).leaf = true
 	entry({"admin", "app_center_api", "uninstall_app"}, call("api_uninstall_app")).leaf = true
@@ -1687,6 +1689,27 @@ function api_get_app_list()
 	if not ok then
 		http.write(json.stringify({ code = 5000, msg = "internal error" }))
 	end
+end
+
+function api_get_system_sources_status()
+	http.prepare_content("application/json")
+	local fp = io.popen("find /var/cache/apk -type f -size +0c 2>/dev/null | head -n 1")
+	local cache_file = fp and trim_str(fp:read("*l") or "") or ""
+	if fp then
+		fp:close()
+	end
+	http.write(json.stringify({
+		code = 2000,
+		data = { updated = cache_file ~= "" and 1 or 0 }
+	}))
+end
+
+function api_update_system_sources()
+	http.prepare_content("application/json")
+	local ret = os.execute("apk update --allow-untrusted >/dev/null 2>&1")
+	http.write(json.stringify({
+		code = ret == 0 and 2000 or 4000
+	}))
 end
 
 function api_get_installed_apps()

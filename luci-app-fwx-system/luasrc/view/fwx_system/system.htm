@@ -19,6 +19,18 @@
   </div>
 
   <div class="form-row">
+    <label class="form-label" for="tcp-rst"><%:TCP Connection Reset%></label>
+    <label class="switch">
+      <input type="checkbox" id="tcp-rst">
+      <span class="slider"></span>
+    </label>
+  </div>
+
+  <div class="form-desc" style="margin-top: -10px; margin-bottom: 20px;">
+    <span><%:Send TCP reset packets when a TCP connection is filtered.%></span>
+  </div>
+
+  <div class="form-row">
     <label class="form-label"><%:Theme Mode%></label>
     <div style="flex: 1;">
       <select id="theme-mode" class="input-short">
@@ -83,8 +95,10 @@
       const d = (resp && resp.data) || {};
       const fwx = d.fwx || {};
       const lanIfname = fwx.lan_ifname || 'br-lan';
+      const tcpRst = fwx.tcp_rst !== undefined ? Number(fwx.tcp_rst) : 1;
       const themeMode = fwx.theme_mode !== undefined ? fwx.theme_mode : 0;
       $('#lan-ifname').val(lanIfname);
+      $('#tcp-rst').prop('checked', tcpRst === 1);
       $('#theme-mode').val(themeMode.toString());
       $('#system-tip').text('');
     }).fail(function(){
@@ -94,6 +108,7 @@
 
   function save() {
     const lanIfname = $('#lan-ifname').val().trim();
+    const tcpRst = $('#tcp-rst').is(':checked') ? 1 : 0;
     const themeMode = $('#theme-mode').val();
     
     if (!validateLanIfname(lanIfname)) {
@@ -105,6 +120,7 @@
     
     const payload = { 
       lan_ifname: lanIfname,
+      tcp_rst: tcpRst,
       theme_mode: themeMode
     };
     $('#system-save').prop('disabled', true);

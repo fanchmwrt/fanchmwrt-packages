@@ -1,0 +1,211 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: luci-app-fwx-wireless-base-setting\n"
+"PO-Revision-Date: 2026-09-09 00:00+0800\n"
+"Last-Translator: FanchmWrt\n"
+"Language-Team: Chinese (Simplified)\n"
+"Language: zh_Hans\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Wireless Setting"
+msgstr "无线设置"
+
+msgid "Wireless"
+msgstr "无线功能"
+
+msgid "Wireless Radio"
+msgstr "无线射频"
+
+msgid "Wireless Interface"
+msgstr "无线接口"
+
+msgid "Basic Setting"
+msgstr "基础设置"
+
+msgid "Wireless Base Setting"
+msgstr "无线基础设置"
+
+msgid "Configure the first SSID of each radio interface"
+msgstr "配置每个射频接口的第一个 SSID"
+
+msgid "Configure wireless radio parameters"
+msgstr "配置无线射频参数"
+
+msgid "Device"
+msgstr "设备"
+
+msgid "SSID"
+msgstr "SSID 名称"
+
+msgid "Password"
+msgstr "密码"
+
+msgid "Encryption"
+msgstr "加密方式"
+
+msgid "Hidden SSID"
+msgstr "隐藏 SSID"
+
+msgid "Client Isolation"
+msgstr "客户端隔离"
+
+msgid "No Encryption"
+msgstr "无加密"
+
+msgid "OWE"
+msgstr "OWE"
+
+msgid "WPA-PSK"
+msgstr "WPA-PSK"
+
+msgid "WPA2-PSK"
+msgstr "WPA2-PSK"
+
+msgid "WPA/WPA2-PSK Mixed"
+msgstr "WPA/WPA2-PSK 混合"
+
+msgid "WPA3-SAE"
+msgstr "WPA3-SAE"
+
+msgid "WPA2/WPA3-SAE Mixed"
+msgstr "WPA2/WPA3-SAE 混合"
+
+msgid "WPA-EAP"
+msgstr "WPA-EAP"
+
+msgid "WPA2-EAP"
+msgstr "WPA2-EAP"
+
+msgid "WPA/WPA2-EAP Mixed"
+msgstr "WPA/WPA2-EAP 混合"
+
+msgid "WPA3-EAP"
+msgstr "WPA3-EAP"
+
+msgid "WPA2/WPA3-EAP Mixed"
+msgstr "WPA2/WPA3-EAP 混合"
+
+msgid "No wireless radio found"
+msgstr "未发现无线射频设备"
+
+msgid "SSID cannot be empty"
+msgstr "SSID 不能为空"
+
+msgid "Password cannot be empty"
+msgstr "密码不能为空"
+
+msgid "Password must be 8 to 63 characters"
+msgstr "密码长度必须在 8 到 63 位之间"
+
+msgid "Refresh"
+msgstr "刷新"
+
+msgid "Save"
+msgstr "保存"
+
+msgid "Loading..."
+msgstr "加载中..."
+
+msgid "Load failed"
+msgstr "加载失败"
+
+msgid "Saved successfully"
+msgstr "保存成功"
+
+msgid "Save failed"
+msgstr "保存失败"
+
+msgid "Save & Apply"
+msgstr "保存并应用"
+
+msgid "Cipher"
+msgstr "加密算法"
+
+msgid "Channel"
+msgstr "信道"
+
+msgid "Country Code"
+msgstr "国家码"
+
+msgid "Bandwidth"
+msgstr "频宽"
+
+msgid "Wireless Mode"
+msgstr "无线模式"
+
+msgid "Legacy"
+msgstr "传统模式"
+
+msgid "Default Region"
+msgstr "默认区域"
+
+msgid "Mode"
+msgstr "工作模式"
+
+msgid "Access Point (AP)"
+msgstr "接入点（AP）"
+
+msgid "Client / Relay"
+msgstr "客户端／中继"
+
+msgid "Unknown"
+msgstr "未知"
+
+msgid "Enabled"
+msgstr "已启用"
+
+msgid "Enable"
+msgstr "启用"
+
+msgid "Disabled"
+msgstr "已禁用"
+
+msgid "Automatic"
+msgstr "自动"
+
+msgid "No SSID is configured on this radio. Configure it in the advanced wireless page first."
+msgstr "该射频尚未配置 SSID，请先在高级无线页面中配置。"
+
+msgid "Client, relay and other non-AP configurations are read-only here."
+msgstr "客户端、中继及其他非普通 AP 配置在此页面仅供查看，不支持修改。"
+
+msgid "This configuration requires advanced wireless settings and is read-only here."
+msgstr "此配置需要高级无线参数或当前未提供的加密能力，在此页面仅供查看。"
+
+msgid "SSID must contain 1 to 32 bytes without control characters."
+msgstr "无线名称须为 1～32 字节，不能包含控制字符（中文通常占 3 字节）。"
+
+msgid "Use 8 to 63 bytes, or a 64-digit hexadecimal WPA key. WPA3-SAE accepts 1 to 63 bytes."
+msgstr "密码须为 8～63 字节；WPA 支持 64 位十六进制密钥，纯 WPA3-SAE 支持 1～63 字节。"
+
+msgid "No changes to save"
+msgstr "没有需要保存的修改"
+
+msgid "Applying wireless settings will disconnect wireless clients. Continue?"
+msgstr "应用无线配置将断开无线客户端连接，是否继续？"
+
+msgid "Settings saved. Wireless is restarting; reconnect using the new SSID and password if necessary."
+msgstr "配置已保存，正在重启无线。若连接断开，请使用新的无线名称和密码重新连接。"
+
+msgid "The connection was interrupted. Settings may have been applied. Reconnect and refresh to confirm."
+msgstr "连接已中断，配置可能已生效。请重新连接后刷新页面确认。"
+
+msgid "Save failed. Refresh the page and check the wireless configuration."
+msgstr "保存失败，请刷新页面并检查无线配置是否已变化或不受支持。"
+
+msgid "Discard unsaved changes and reload?"
+msgstr "放弃未保存的修改并重新加载？"
+
+msgid "Not supported by this firmware or band"
+msgstr "当前固件或频段不支持"
+
+msgid "Wireless is restarting, please wait."
+msgstr "无线正在重启，请稍后"
+
+msgid "Countdown"
+msgstr "倒计时"
+
+msgid "seconds"
+msgstr "秒"

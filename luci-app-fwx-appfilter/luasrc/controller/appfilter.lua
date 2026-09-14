@@ -30,6 +30,7 @@ function get_class_list()
 	luci.http.prepare_content("application/json")
 	
 	local req_obj = {}
+	req_obj.CopyRight = "www.fanchmwrt.com"
 	req_obj.api = "class_list"
 	req_obj.data = {}
 	

@@ -1,0 +1,32 @@
+msgid "System Monitor"
+msgstr "系统监控"
+
+msgid "Traffic Statistics"
+msgstr "流量统计"
+
+msgid "Today Traffic Statistics"
+msgstr "今日流量统计"
+
+msgid "History Traffic Statistics"
+msgstr "历史流量统计"
+
+msgid "Upstream Traffic"
+msgstr "上行流量"
+
+msgid "Downstream Traffic"
+msgstr "下行流量"
+
+msgid "Traffic"
+msgstr "流量"
+
+msgid "Refresh"
+msgstr "刷新"
+
+msgid "Loading..."
+msgstr "加载中..."
+
+msgid "No data"
+msgstr "暂无数据"
+
+msgid "Load failed"
+msgstr "加载失败"

@@ -714,9 +714,68 @@
 		return _ICON_COLORS[Math.abs(h) % _ICON_COLORS.length];
 	}
 
+	function createAppIconElement(appId, appName, size) {
+		var id = String(appId || '');
+		var iconSize = size || 32;
+		var iconSrc = id ? '<%=resource%>/app_icons/' + encodeURIComponent(id) + '.png' : '';
+		var commonCss = {
+			width: iconSize + 'px', height: iconSize + 'px', borderRadius: '6px',
+			marginRight: '10px', flexShrink: 0, display: 'block'
+		};
+		if (id && _iconStatusCache[id] === 'loaded') {
+			return $('<img>').attr({src: iconSrc, alt: appName}).css($.extend({}, commonCss, {objectFit: 'cover'}));
+		}
+
+		var $letter = $('<span>').css($.extend({}, commonCss, {
+			display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+			background: appLetterColor(appName), color: '#fff',
+			fontSize: Math.max(11, Math.round(iconSize * 0.42)) + 'px', fontWeight: '700', lineHeight: 1
+		})).text((appName || '?').charAt(0).toUpperCase());
+		if (id && _iconStatusCache[id] !== 'failed') {
+			var loader = new Image();
+			loader.onload = function() {
+				_iconStatusCache[id] = 'loaded';
+				$letter.replaceWith($('<img>').attr({src: iconSrc, alt: appName}).css($.extend({}, commonCss, {objectFit: 'cover'})));
+			};
+			loader.onerror = function() { _iconStatusCache[id] = 'failed'; };
+			loader.src = iconSrc;
+		}
+		return $letter;
+	}
+
+	function formatVisitCompactTime(timestamp) {
+		var date = new Date((Number(timestamp) || 0) * 1000);
+		if (!timestamp || isNaN(date.getTime())) return '--';
+		function pad(value) { return value < 10 ? '0' + value : String(value); }
+		return pad(date.getMonth() + 1) + '-' + pad(date.getDate()) + ' ' + pad(date.getHours()) + ':' + pad(date.getMinutes());
+	}
+
+	function renderVisitMobileList(visitList) {
+		var $list = $('#visit_mobile_list').empty();
+		if (!visitList.length) {
+			$list.append($('<div>').addClass('mobile-empty-state').text('<%:No records%>'));
+			return;
+		}
+		visitList.forEach(function(item) {
+			var appName = item.name || '<%:Unknown App%>';
+			var duration = item.act == 1 ? '--' : formatTimeDuration(Number(item.tt) || 0);
+			var $row = $('<div>').addClass('visit-mobile-item');
+			var $main = $('<div>').addClass('visit-mobile-main');
+			var $info = $('<div>').addClass('visit-mobile-info');
+			$info.append($('<div>').addClass('visit-mobile-name').text(appName));
+			$info.append($('<div>').addClass('visit-mobile-meta').text(formatVisitCompactTime(item.lt || item.ft) + '  ·  ' + duration));
+			$main.append(createAppIconElement(item.id, appName, 36)).append($info);
+			var statusClass = item.act == 1 ? 'filtered' : (item.online == 1 ? 'online' : 'offline');
+			var statusTitle = item.act == 1 ? '<%:Filtered%>' : (item.online == 1 ? '<%:Online%>' : '<%:Offline%>');
+			$row.append($main).append($('<span>').addClass('visit-mobile-status ' + statusClass).attr('title', statusTitle));
+			$list.append($row);
+		});
+	}
+
 	function render_visit_list_table(data) {
 		var tb = document.getElementById('visit_list_table');
 		var visit_list = (data && Array.isArray(data.list)) ? data.list : [];
+		renderVisitMobileList(visit_list);
 		if (tb) {
 			while (tb.rows.length > 1) {
 				tb.deleteRow(1);
@@ -878,6 +937,37 @@
 		loadVisitListData(visit_cur_page);
 	}
 
+	function isMobileHistoryChart() {
+		return window.matchMedia && window.matchMedia('(max-width: 767px)').matches;
+	}
+
+	function renderMobileHistoryEmpty(chart, chartDom, title, message, textColor) {
+		chartDom.style.height = '132px';
+		chart.resize();
+		chart.setOption({
+			animation: false,
+			title: {
+				text: title,
+				left: 'center',
+				textStyle: { color: textColor, fontSize: 14 }
+			},
+			graphic: {
+				type: 'text',
+				left: 'center',
+				top: 70,
+				style: {
+					text: message,
+					fill: textColor,
+					opacity: 0.65,
+					fontSize: 12
+				}
+			},
+			xAxis: { show: false },
+			yAxis: { show: false },
+			series: []
+		}, true);
+	}
+
 	function renderHourlyTrafficChart(hourlyStats) {
 		var chartDom = document.getElementById('hourly_traffic_chart');
 		if (!chartDom) {
@@ -899,6 +989,8 @@
 		var hours = [];
 		var upBytes = [];
 		var downBytes = [];
+		var rawUpBytes = [];
+		var rawDownBytes = [];
 		
 		var sortedStats = hourlyStats.slice().sort(function(a, b) {
 			return a.hour - b.hour;
@@ -908,15 +1000,39 @@
 			var stat = sortedStats[i];
 			hours.push(stat.hour + ':00');
 			if (stat.traffic) {
+				rawUpBytes.push(Number(stat.traffic.up_bytes) || 0);
+				rawDownBytes.push(Number(stat.traffic.down_bytes) || 0);
 				upBytes.push(Math.round(stat.traffic.up_bytes / (1024 * 1024))); 
 				downBytes.push(Math.round(stat.traffic.down_bytes / (1024 * 1024))); 
 			} else {
+				rawUpBytes.push(0);
+				rawDownBytes.push(0);
 				upBytes.push(0);
 				downBytes.push(0);
 			}
 		}
 		
 		var textColor = window.getComputedStyle(document.body).color || '#ffffff';
+		var mobileLayout = isMobileHistoryChart();
+		if (mobileLayout) {
+			var activeIndexes = [];
+			for (var index = 0; index < hours.length; index++) {
+				if (rawUpBytes[index] > 0 || rawDownBytes[index] > 0) activeIndexes.push(index);
+			}
+			hours = activeIndexes.map(function(index) { return hours[index]; });
+			upBytes = activeIndexes.map(function(index) { return upBytes[index]; });
+			downBytes = activeIndexes.map(function(index) { return downBytes[index]; });
+			rawUpBytes = activeIndexes.map(function(index) { return rawUpBytes[index]; });
+			rawDownBytes = activeIndexes.map(function(index) { return rawDownBytes[index]; });
+		}
+		var hasTrafficData = rawUpBytes.some(function(value, index) {
+			return value > 0 || rawDownBytes[index] > 0;
+		});
+		if (mobileLayout && !hasTrafficData) {
+			renderMobileHistoryEmpty(hourlyTrafficChart, chartDom, '<%:Today Traffic Statistics (24 Hours)%>', '<%:No traffic data in this period%>', textColor);
+			return;
+		}
+		chartDom.style.height = mobileLayout ? Math.max(170, hours.length * 48 + 70) + 'px' : '400px';
 		
 		var option = {
 			animation: true,  
@@ -936,6 +1052,7 @@
 					var result = params[0].name + '<br/>';
 					for (var i = 0; i < params.length; i++) {
 						var param = params[i];
+						if (!param.seriesName) continue;
 						var value = param.value;
 						var totalBytes = value * 1024 * 1024;
 						var formatted = formatTraffic(totalBytes);
@@ -946,19 +1063,23 @@
 			},
 			legend: {
 				data: ['<%:Upstream Traffic%>', '<%:Downstream Traffic%>'],
-				top: 30,
+				top: mobileLayout ? 30 : 30,
 				textStyle: {
 					color: textColor
 				}
 			},
 			grid: {
-				left: '1%',
-				right: '1%',
-				bottom: '10%',
-				top: '15%',
+				left: mobileLayout ? 2 : '1%',
+				right: mobileLayout ? 82 : '1%',
+				bottom: mobileLayout ? 6 : '10%',
+				top: mobileLayout ? 62 : '15%',
 				containLabel: true
 			},
-			xAxis: {
+			xAxis: mobileLayout ? {
+				type: 'value',
+				show: false,
+				min: 0
+			} : {
 				type: 'category',
 				data: hours,
 				axisLabel: {
@@ -972,7 +1093,19 @@
 					}
 				}
 			},
-			yAxis: {
+			yAxis: mobileLayout ? {
+				type: 'category',
+				data: hours,
+				inverse: true,
+				axisLabel: {
+					color: textColor,
+					interval: 0,
+					fontSize: 10,
+					margin: 7
+				},
+				axisLine: { show: false },
+				axisTick: { show: false }
+			} : {
 			type: 'value',
 			name: '<%:Traffic%>',
 			minInterval: 1,
@@ -1015,23 +1148,49 @@
 				{
 					name: '<%:Upstream Traffic%>',
 					type: 'bar',
-					data: upBytes,
-					stack: 'traffic',
-					barWidth: 20,
+					data: mobileLayout ? rawUpBytes.map(function(value) {
+						return value / (1024 * 1024);
+					}) : upBytes,
+					stack: mobileLayout ? null : 'traffic',
+					barWidth: mobileLayout ? 4 : 20,
+					barGap: mobileLayout ? '70%' : '30%',
+					barCategoryGap: mobileLayout ? '52%' : '20%',
 					barMaxWidth: 30,
 					itemStyle: {
 						color: '#5470c6'
+					},
+					label: {
+						show: mobileLayout,
+						position: 'right',
+						distance: 5,
+						color: textColor,
+						fontSize: 10,
+						formatter: function(params) {
+							return '\u2191 ' + formatTraffic(rawUpBytes[params.dataIndex]);
+						}
 					}
 				},
 				{
 					name: '<%:Downstream Traffic%>',
 					type: 'bar',
-					data: downBytes,
-					stack: 'traffic',
-					barWidth: 20,
+					data: mobileLayout ? rawDownBytes.map(function(value) {
+						return value / (1024 * 1024);
+					}) : downBytes,
+					stack: mobileLayout ? null : 'traffic',
+					barWidth: mobileLayout ? 4 : 20,
 					barMaxWidth: 30,
 					itemStyle: {
 						color: '#91cc75'
+					},
+					label: {
+						show: mobileLayout,
+						position: 'right',
+						distance: 5,
+						color: textColor,
+						fontSize: 10,
+						formatter: function(params) {
+							return '\u2193 ' + formatTraffic(rawDownBytes[params.dataIndex]);
+						}
 					}
 				}
 			]
@@ -1050,9 +1209,58 @@
 		}, 200);
 	}
 
+	function renderHourlyAppsMobileList(hourlyStats) {
+		var $container = $('#hourly_apps_mobile_list').empty().show();
+		var groups = [];
+		(hourlyStats || []).slice().sort(function(a, b) { return a.hour - b.hour; }).forEach(function(stat) {
+			var apps = Array.isArray(stat.apps) ? stat.apps.filter(function(app) {
+				return app && app.appid > 0 && Number(app.time) > 0;
+			}).sort(function(a, b) {
+				return Number(b.time) - Number(a.time);
+			}).slice(0, 3) : [];
+			if (apps.length) groups.push({hour: stat.hour, apps: apps});
+		});
+
+		if (!groups.length) {
+			$container.append($('<div>').addClass('mobile-empty-state').text('<%:No app usage in this period%>'));
+			return;
+		}
+
+		$container.append($('<h4>').addClass('hourly-apps-title').text('<%:Today Top Apps%>'));
+		groups.forEach(function(group) {
+			var maxTime = Number(group.apps[0].time) || 1;
+			var $group = $('<section>').addClass('hourly-app-group');
+			$group.append($('<div>').addClass('hourly-app-time').text(group.hour + ':00'));
+			group.apps.forEach(function(app, index) {
+				var appName = app.name || ('<%:Unknown App%> ' + app.appid);
+				var percent = Math.max(3, Math.min(100, Number(app.time) * 100 / maxTime));
+				var $row = $('<div>').addClass('hourly-app-row');
+				var $name = $('<div>').addClass('hourly-app-name').append(createAppIconElement(app.appid, appName, 28));
+				$name.append($('<span>').attr('title', appName).text(appName));
+				var $track = $('<div>').addClass('hourly-app-track');
+				$track.append($('<span>').addClass('hourly-app-fill').css({width: percent + '%', backgroundColor: getAppColor(index)}));
+				$row.append($name).append($track).append($('<span>').addClass('hourly-app-duration').text(formatTimeDuration(Number(app.time) || 0)));
+				$group.append($row);
+			});
+			$container.append($group);
+		});
+	}
+
 	function renderHourlyAppsChart(hourlyStats) {
 		var chartDom = document.getElementById('hourly_apps_chart');
 		if (!chartDom) return;
+		var mobileLayout = isMobileHistoryChart();
+		if (mobileLayout) {
+			if (hourlyAppsChart) {
+				hourlyAppsChart.dispose();
+				hourlyAppsChart = null;
+			}
+			chartDom.style.display = 'none';
+			renderHourlyAppsMobileList(hourlyStats);
+			return;
+		}
+		$('#hourly_apps_mobile_list').hide().empty();
+		chartDom.style.display = 'block';
 		
 		if (hourlyAppsChart) {
 			hourlyAppsChart.dispose();
@@ -1102,7 +1310,7 @@
 				type: 'bar',
 				stack: 'apps',
 				data: appData.data,
-				barWidth: 20,
+				barWidth: mobileLayout ? 6 : 20,
 				barMaxWidth: 30,
 				itemStyle: {
 					color: getAppColor(k)
@@ -1111,6 +1319,40 @@
 		}
 		
 		var textColor = window.getComputedStyle(document.body).color || '#ffffff';
+		var appTotals = hours.map(function(value, index) {
+			var total = 0;
+			for (var i = 0; i < appIds.length; i++) {
+				total += appSeries[appIds[i]].data[index] || 0;
+			}
+			return total;
+		});
+		var hasAppData = appTotals.some(function(value) { return value > 0; });
+		if (mobileLayout && !hasAppData) {
+			renderMobileHistoryEmpty(hourlyAppsChart, chartDom, '<%:Today Top Apps Statistics (24 Hours)%>', '<%:No app usage in this period%>', textColor);
+			return;
+		}
+		if (mobileLayout) {
+			series.push({
+				name: '',
+				type: 'bar',
+				data: appTotals,
+				barWidth: 6,
+				barGap: '-100%',
+				silent: true,
+				itemStyle: { color: 'transparent' },
+				label: {
+					show: true,
+					position: 'right',
+					distance: 5,
+					color: textColor,
+					fontSize: 10,
+					formatter: function(params) {
+						return params.value > 0 ? formatTimeDuration(params.value) : '';
+					}
+				}
+			});
+		}
+		chartDom.style.height = mobileLayout ? Math.max(300, hours.length * 17 + 96) + 'px' : '400px';
 		
 		var option = {
 			animation: true,  
@@ -1130,7 +1372,7 @@
 					var result = params[0].name + '<br/>';
 					var hasData = false;
 					for (var i = 0; i < params.length; i++) {
-						if (params[i].value > 0) {
+						if (params[i].seriesName && params[i].value > 0) {
 							var timeSeconds = params[i].value;
 							var timeStr = formatTimeDuration(timeSeconds);
 							result += params[i].marker + params[i].seriesName + ': ' + timeStr + '<br/>';
@@ -1141,8 +1383,9 @@
 				}
 			},
 			legend: {
-				data: series.map(function(s) { return s.name; }),
-				bottom: 10,
+				data: series.filter(function(s) { return s.name; }).map(function(s) { return s.name; }),
+				top: mobileLayout ? 30 : 'auto',
+				bottom: mobileLayout ? 'auto' : 10,
 				textStyle: {
 					color: textColor
 				},
@@ -1151,13 +1394,17 @@
 				left: 'center'
 			},
 			grid: {
-				left: '1%',
-				right: '1%',
-				bottom: '15%',
-				top: '10%',
+				left: mobileLayout ? 2 : '1%',
+				right: mobileLayout ? 62 : '1%',
+				bottom: mobileLayout ? 6 : '15%',
+				top: mobileLayout ? 66 : '10%',
 				containLabel: true
 			},
-			xAxis: {
+			xAxis: mobileLayout ? {
+				type: 'value',
+				show: false,
+				min: 0
+			} : {
 				type: 'category',
 				data: hours,
 				axisLabel: {
@@ -1171,7 +1418,19 @@
 					}
 				}
 			},
-			yAxis: {
+			yAxis: mobileLayout ? {
+				type: 'category',
+				data: hours,
+				inverse: true,
+				axisLabel: {
+					color: textColor,
+					interval: 0,
+					fontSize: 10,
+					margin: 7
+				},
+				axisLine: { show: false },
+				axisTick: { show: false }
+			} : {
 			type: 'value',
 			name: '<%:Duration%>',
 			minInterval: 60,
@@ -1550,6 +1809,10 @@
 			stopVisitAutoRefresh();
 			loadUserBasicInfo();
 		}
+		if (tabId === 'tab-history-statistics') {
+			stopVisitAutoRefresh();
+			load_user_history();
+		}
 		if (tabId === 'tab-app-duration') {
 			stopVisitAutoRefresh();
 			if (!appTimeChart) {
@@ -1624,6 +1887,7 @@
 				<li class="tab-item" onclick="showTabContent('tab-app-duration', this)"><%:App Statistics%></li>
 				<li class="tab-item" onclick="showTabContent('tab-traffic-statistics', this)"><%:Today Traffic%></li>
 				<li class="tab-item" onclick="showTabContent('tab-app-ranking', this)"><%:Today Top Apps%></li>
+				<li class="tab-item" onclick="showTabContent('tab-history-statistics', this)"><%:Historical Statistics%></li>
 				<li class="tab-item" onclick="showTabContent('tab-online-offline-records', this)" style="display:none"><%:Online/Offline Records%></li>
 				<li class="tab-item" onclick="showTabContent('tab-visit-records', this)"><%:Visit Records%></li>
 			</ul>
@@ -1721,9 +1985,11 @@
 			<div id="tab-app-ranking" class="tab-body">
 				<div class="bar-chart">
 					<div id="hourly_apps_chart" style="width:100%;height: 400px;"></div>
+					<div id="hourly_apps_mobile_list" class="hourly-apps-mobile-list"></div>
 				</div>
 			</div>
 
+			<%+user/user_history%>
 			<div id="tab-online-offline-records" class="tab-body" style="display:none">
 				<div style="padding: 20px;">
 					<table class="table cbi-section-table" style="width: 100%;">
@@ -1744,7 +2010,8 @@
 			</div>
 
 			<div id="tab-visit-records" class="tab-body">
-				<div style="max-height: 1000px; overflow-y: auto;padding-right: 20px;">
+				<div class="visit-record-content" style="max-height: 1000px; overflow-y: auto;padding-right: 20px;">
+					<div id="visit_mobile_list" class="visit-mobile-list"></div>
 					<table class="table cbi-section-table" id="visit_list_table">
 						<tr class="tr table-titles">
 							<th class="th">
@@ -2060,6 +2327,192 @@
 
 	.nickname-toast.error {
 		background: #dc2626;
+	}
+
+	.hourly-apps-mobile-list,
+	.visit-mobile-list {
+		display: none;
+	}
+
+	@media (max-width: 767px) {
+		.tab-list {
+			overflow-x: auto;
+			overflow-y: hidden;
+			white-space: nowrap;
+			-webkit-overflow-scrolling: touch;
+			scrollbar-width: thin;
+		}
+
+		.tab-item {
+			flex: 0 0 auto;
+			white-space: nowrap;
+		}
+
+		.bar-chart {
+			width: 100%;
+			max-width: 100%;
+			min-width: 0;
+		}
+
+		#hourly_traffic_chart,
+		#hourly_apps_chart {
+			min-width: 0;
+		}
+
+		.hourly-apps-mobile-list,
+		.visit-mobile-list {
+			display: block;
+		}
+
+		.hourly-apps-mobile-list {
+			padding: 14px 16px;
+			border: 1px solid var(--border-color-medium, #dfe3e8);
+			border-radius: 8px;
+			background: var(--background-color-high, #fff);
+		}
+
+		.hourly-apps-title {
+			margin: 0 0 12px;
+			font-size: 15px;
+		}
+
+		.hourly-app-group {
+			padding: 12px 0;
+			border-bottom: 1px solid var(--border-color-low, rgba(128, 128, 128, 0.14));
+		}
+
+		.hourly-app-group:last-child {
+			border-bottom: 0;
+		}
+
+		.hourly-app-time {
+			margin-bottom: 8px;
+			color: var(--text-color-medium, #7b8490);
+			font-size: 13px;
+		}
+
+		.hourly-app-row {
+			display: grid;
+			grid-template-columns: 112px minmax(30px, 1fr) 44px;
+			align-items: center;
+			gap: 8px;
+			min-height: 34px;
+		}
+
+		.hourly-app-name {
+			display: flex;
+			align-items: center;
+			min-width: 0;
+		}
+
+		.hourly-app-name img,
+		.hourly-app-name > span:first-child {
+			margin-right: 8px !important;
+		}
+
+		.hourly-app-name > span:last-child {
+			overflow: hidden;
+			white-space: nowrap;
+			text-overflow: ellipsis;
+		}
+
+		.hourly-app-track {
+			height: 5px;
+			overflow: hidden;
+			border-radius: 999px;
+			background: rgba(128, 128, 128, 0.14);
+		}
+
+		.hourly-app-fill {
+			display: block;
+			height: 100%;
+			border-radius: inherit;
+		}
+
+		.hourly-app-duration {
+			color: var(--text-color-medium, #7b8490);
+			text-align: right;
+			font-size: 12px;
+			white-space: nowrap;
+		}
+
+		.visit-record-content {
+			max-height: none !important;
+			padding-right: 0 !important;
+			overflow: visible !important;
+		}
+
+		#visit_list_table {
+			display: none;
+		}
+
+		.visit-mobile-list {
+			padding: 0 14px;
+			border: 1px solid var(--border-color-medium, #dfe3e8);
+			border-radius: 8px;
+			background: var(--background-color-high, #fff);
+		}
+
+		.visit-mobile-item {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 12px;
+			min-height: 66px;
+			border-bottom: 1px solid var(--border-color-low, rgba(128, 128, 128, 0.14));
+		}
+
+		.visit-mobile-item:last-child {
+			border-bottom: 0;
+		}
+
+		.visit-mobile-main {
+			display: flex;
+			align-items: center;
+			min-width: 0;
+		}
+
+		.visit-mobile-info {
+			min-width: 0;
+		}
+
+		.visit-mobile-name {
+			overflow: hidden;
+			white-space: nowrap;
+			text-overflow: ellipsis;
+			font-size: 15px;
+			font-weight: 500;
+		}
+
+		.visit-mobile-meta {
+			margin-top: 4px;
+			color: var(--text-color-medium, #8a919b);
+			font-size: 12px;
+			white-space: nowrap;
+		}
+
+		.visit-mobile-status {
+			width: 9px;
+			height: 9px;
+			flex: 0 0 9px;
+			border-radius: 50%;
+			background: #9ca3af;
+		}
+
+		.visit-mobile-status.online {
+			background: #22c55e;
+		}
+
+		.visit-mobile-status.filtered {
+			background: #ef4444;
+		}
+
+		.mobile-empty-state {
+			padding: 28px 12px;
+			color: var(--text-color-medium, #8a919b);
+			text-align: center;
+			font-size: 13px;
+		}
 	}
 </style>
 

@@ -21,6 +21,7 @@ function index()
 	entry({"admin", "fwx", "get_parental_control_detail"}, call("get_parental_control_detail"), nil).leaf = true
 	entry({"admin", "fwx", "set_nickname"}, call("set_nickname"), nil).leaf = true
 	entry({"admin", "fwx", "get_hourly_stats"}, call("get_hourly_stats"), nil).leaf = true
+	entry({"admin", "fwx", "get_user_daily_summary"}, call("get_user_daily_summary"), nil).leaf = true
 	entry({"admin", "fwx", "get_user_basic_info"}, call("get_user_basic_info"), nil).leaf = true
 	entry({"admin", "fwx", "get_online_offline_records"}, call("get_online_offline_records"), nil).leaf = true
 	entry({"admin", "fwx", "get_user_parental_control_rules"}, call("get_user_parental_control_rules"), nil).leaf = true
@@ -120,6 +121,7 @@ function get_class_list()
 	luci.http.prepare_content("application/json")
 
 	local req_obj = {}
+	req_obj.CopyRight = "www.fanchmwrt.com"
 	req_obj.api = "class_list"
 	req_obj.data = {}
 
@@ -396,6 +398,26 @@ function get_dev_visit_list(mac)
 	else
 		luci.http.write_json(resp_obj or {})
 	end
+end
+
+function get_user_daily_summary()
+	local mac = luci.http.formvalue("mac")
+	luci.http.prepare_content("application/json")
+	if not mac or not mac:match("^%x%x:%x%x:%x%x:%x%x:%x%x:%x%x$") then
+		luci.http.status(400, "Bad Request")
+		luci.http.write_json({code = 400})
+		return
+	end
+	local result = require("luci.util").ubus("fwx", "common", {
+		api = "get_user_daily_summary",
+		data = {mac = mac, days = 30}
+	})
+	if not result or result.code ~= 2000 or not result.data then
+		luci.http.status(503, "Service Unavailable")
+		luci.http.write_json({code = 503})
+		return
+	end
+	luci.http.write_json(result.data)
 end
 
 function get_hourly_stats(mac)

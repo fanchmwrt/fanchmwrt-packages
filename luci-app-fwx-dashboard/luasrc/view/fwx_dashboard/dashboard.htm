@@ -1,4 +1,7 @@
 <link rel="stylesheet" href="<%=resource%>/css/common.css">
+<%
+    local network_setting = require("luci.model.uci").cursor():get("fwx", "network", "work_mode") == "1" and "lan" or "wan"
+%>
 <script src="<%=resource%>/jquery-3.7.1.min.js"></script>
 <script src="<%=resource%>/echarts.min.js"></script>
 
@@ -22,10 +25,10 @@
         --storage-bar-gradient: linear-gradient(90deg,#9deaff,#a6ceff);
         --storage-bar-shadow: 0 0 14px rgba(151, 217, 255, 0.58);
     }
-    
+
     .dash {
         display: grid;
-        grid-template-columns: 1fr 300px; 
+        grid-template-columns: minmax(0, 1fr) 300px;
         gap: 12px;
         padding: 0 0 8px;
         box-sizing: border-box;
@@ -54,7 +57,7 @@
     #pie-app-card, #bar-user-traffic-card {
         min-height: 470px;  
     }
-    #pie-app-card .chart-container, #bar-user-traffic-card .chart-container {
+    #pie-app-card .chart-container {
         min-height: 400px; 
         height: 100%;  
         max-height: none; 
@@ -222,15 +225,11 @@
         border-color: rgba(59, 130, 246, 0.5);
         color: #3b82f6;
     }
-    .top-stats { display:grid; grid-template-columns: repeat(5,1fr); gap:10px; margin-bottom:12px; }
-    .top-stats .big { font-size:15px; font-weight:600; }
-    .top-stats .top-stat-value {
-        font-size: 26px;
-        font-weight: 700;
-        line-height: 1.05;
-        letter-spacing: 0.01em;
-        color: #eaf2fb;
-        text-shadow: 0 1px 0 rgba(5, 12, 22, 0.35);
+    .top-stats {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 10px;
+        margin-bottom: 12px;
     }
     .mini {
         border-radius: 8px;
@@ -246,87 +245,90 @@
         font-weight: 600;
     }
     .top-stats .mini {
-        --stat-bg-from: #212a33;
-        --stat-bg-mid: #1d2630;
-        --stat-bg-to: #1a222c;
-        --stat-icon-color: rgba(220, 233, 247, 0.90);
-        --stat-pattern-soft: rgba(255, 255, 255, 0.08);
-        --stat-pattern-line: rgba(255, 255, 255, 0.05);
-        --stat-overlay-a: rgba(255, 255, 255, 0.12);
-        --stat-overlay-b: rgba(255, 255, 255, 0.04);
-        position: relative;
-        overflow: hidden;
-        isolation: isolate;
-        border-radius: 10px;
-        padding: 10px 12px 12px;
-        gap: 12px;
-        min-height: 94px;
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        box-shadow: 0 8px 16px rgba(8, 15, 30, 0.22);
-        background: linear-gradient(135deg, var(--stat-bg-from) 0%, var(--stat-bg-mid) 22%, var(--stat-bg-to) 72%, var(--stat-bg-to) 100%);
-        color: rgba(248, 251, 255, 0.98);
-    }
-    .top-stats .mini::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background-image:
-            radial-gradient(circle at 88% 18%, var(--stat-pattern-soft) 0%, rgba(255, 255, 255, 0) 42%),
-            repeating-linear-gradient(
-                132deg,
-                rgba(255, 255, 255, 0) 0px,
-                rgba(255, 255, 255, 0) 11px,
-                var(--stat-pattern-line) 11px,
-                var(--stat-pattern-line) 12px
-            );
-        opacity: 0.28;
-        z-index: 0;
-        pointer-events: none;
-    }
-    .top-stats .mini:nth-child(1) {
-        --stat-icon-color: #73a9d8;
-    }
-    .top-stats .mini:nth-child(2) {
-        --stat-icon-color: #b0a9f0;
-    }
-    .top-stats .mini:nth-child(3) {
-        --stat-icon-color: #b19571;
-    }
-    .top-stats .mini:nth-child(4) {
-        --stat-icon-color: #0ba13d;
-    }
-    .top-stats .mini:nth-child(5) {
-        --stat-icon-color: #76c7dd;
+        --stat-icon-color: #4a7fbd;
+        min-width: 0;
+        min-height: 84px;
+        box-sizing: border-box;
+        padding: 12px 14px;
+        gap: 8px;
+        border: 1px solid var(--border-color-medium, #e2e6eb);
+        border-radius: 8px;
+        background: var(--background-color-high, #ffffff);
+        color: var(--text-color-high, #26313d);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
     }
     .top-stats .stat-head {
         position: relative;
-        display: block;
-        min-height: 24px;
-        padding-right: 28px;
+        min-height: 18px;
+        padding-right: 26px;
+        flex: 1;
+    }
+    .top-stats a.mini {
+        text-decoration: none;
+        cursor: pointer;
+        transition: border-color 0.15s ease;
+    }
+    .top-stats a.mini:hover,
+    .top-stats a.mini:focus-visible {
+        border-color: var(--stat-icon-color);
+        text-decoration: none;
+    }
+    .top-stats a.mini:focus-visible {
+        outline: 2px solid var(--stat-icon-color);
+        outline-offset: 2px;
     }
     .top-stats .stat-label {
         display: block;
-        font-size: 13px;
-        line-height: 24px;
-        padding-left: 0;
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 18px;
+        letter-spacing: 0;
+        text-transform: none;
+        color: var(--text-color-medium, #6b7280);
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+    .top-stats .top-stat-value {
+        min-width: 0;
+        font-size: 20px;
         font-weight: 600;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-        opacity: 0.86;
+        line-height: 1.3;
+        letter-spacing: 0;
+        font-variant-numeric: tabular-nums;
+        color: inherit;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        text-shadow: none;
+    }
+    .top-stats #internet-status {
+        position: relative;
+        padding-left: 14px;
+        font-size: 15px;
+        font-weight: 500;
+        line-height: 26px;
+    }
+    .top-stats #internet-status::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 10px;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: currentColor;
+    }
+    .top-stats #internet-status:empty::before {
+        display: none;
     }
     .top-stats .stat-icon {
         position: absolute;
-        top: 2px;
+        top: 0;
         right: 0;
-        left: auto;
-        width: 20px;
-        height: 20px;
+        width: 18px;
+        height: 18px;
         display: block;
         background-color: var(--stat-icon-color);
-        opacity: 0.90;
         -webkit-mask: var(--stat-icon-url) center / contain no-repeat;
         mask: var(--stat-icon-url) center / contain no-repeat;
     }
@@ -335,81 +337,18 @@
     .top-stats .icon-user { --stat-icon-url: url('/luci-static/resources/icons/user.svg'); }
     .top-stats .icon-connect { --stat-icon-url: url('/luci-static/resources/icons/connect.svg'); }
     .top-stats .icon-flow { --stat-icon-url: url('/luci-static/resources/icons/flow.svg'); }
-    .top-stats .mini::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background-image:
-            linear-gradient(120deg, var(--stat-overlay-a) 0%, rgba(255, 255, 255, 0) 46%),
-            linear-gradient(180deg, var(--stat-overlay-b), rgba(255, 255, 255, 0));
-        opacity: 0.22;
-        z-index: 0;
-        pointer-events: none;
-    }
-    .top-stats .mini .top-stat-value {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-    .top-stats #internet-status {
-        font-size: 18px;
-        line-height: 1.2;
-    }
-    .top-stats #mini-traffic {
-        font-size: 22px;
-    }
-    .top-stats .mini > * {
-        position: relative;
-        z-index: 2;
-    }
+    .top-stats .mini:nth-child(2) { --stat-icon-color: #6081bd; }
+    .top-stats .mini:nth-child(3) { --stat-icon-color: #398879; }
+    .top-stats .mini:nth-child(4) { --stat-icon-color: #4c8da4; }
+    .top-stats .mini:nth-child(5) { --stat-icon-color: #3094a4; }
     [data-darkmode="true"] .top-stats .mini {
-        --stat-pattern-soft: rgba(184, 208, 236, 0.04);
-        --stat-pattern-line: rgba(194, 215, 241, 0.025);
-        --stat-overlay-a: rgba(210, 229, 255, 0.05);
-        --stat-overlay-b: rgba(210, 229, 255, 0.012);
-        border-color: rgba(255, 255, 255, 0.18);
-        box-shadow: 0 8px 16px rgba(2, 8, 20, 0.26);
+        background: var(--background-color-high, #24282e);
+        color: var(--text-color-high, #e5e7eb);
+        border-color: var(--border-color-medium, #383e46);
+        box-shadow: none;
     }
-    [data-darkmode="true"] .top-stats .stat-icon {
-        opacity: 0.80;
-    }
-    :root:not([data-darkmode="true"]) .top-stats .mini {
-        --stat-bg-from: #fbfcfd;
-        --stat-bg-mid: #f8fafc;
-        --stat-bg-to: #f5f7fa;
-        --stat-pattern-soft: rgba(84, 111, 139, 0.12);
-        --stat-pattern-line: rgba(84, 111, 139, 0.08);
-        --stat-overlay-a: rgba(255, 255, 255, 0.16);
-        --stat-overlay-b: rgba(255, 255, 255, 0.06);
-        color: #1f2d3d;
-        border-color: rgba(121, 141, 164, 0.22);
-        box-shadow: 0 8px 14px rgba(20, 26, 36, 0.14);
-    }
-    :root:not([data-darkmode="true"]) .top-stats .top-stat-value {
-        color: #172638;
-        text-shadow: 0 1px 0 rgba(255, 255, 255, 0.32);
-    }
-    :root:not([data-darkmode="true"]) .top-stats .stat-label {
-        color: rgba(31, 45, 62, 0.86);
-        opacity: 0.88;
-    }
-    :root:not([data-darkmode="true"]) .top-stats .stat-icon {
-        opacity: 0.88;
-    }
-    :root:not([data-darkmode="true"]) .top-stats .mini:nth-child(1) {
-        --stat-icon-color: #4a7fbd;
-    }
-    :root:not([data-darkmode="true"]) .top-stats .mini:nth-child(2) {
-        --stat-icon-color: #5e628f;
-    }
-    :root:not([data-darkmode="true"]) .top-stats .mini:nth-child(3) {
-        --stat-icon-color: #8a6f51;
-    }
-    :root:not([data-darkmode="true"]) .top-stats .mini:nth-child(4) {
-        --stat-icon-color: #53799f;
-    }
-    :root:not([data-darkmode="true"]) .top-stats .mini:nth-child(5) {
-        --stat-icon-color: #548894;
+    [data-darkmode="true"] .top-stats .stat-label {
+        color: var(--text-color-medium, #9ca3af);
     }
     .kv { display: grid; grid-template-columns: 90px 1fr; row-gap: 6px; column-gap: 4px; font-size: 13px; }
     .mini-title {
@@ -431,9 +370,9 @@
     }
     .compact-row {
         position: relative;
-        display: flex;
+        display: grid;
+        grid-template-columns: minmax(72px, 88px) minmax(0, 1fr);
         align-items: center;
-        justify-content: space-between;
         gap: 10px;
         padding: 7px 0;
         border-radius: 0;
@@ -474,16 +413,21 @@
         font-size: 12px;
         opacity: 0.78;
         white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
     .compact-value {
         font-size: 14px;
         font-weight: 600;
+        min-width: 0;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+        text-align: right;
     }
     [data-darkmode="true"] .compact-label {
-        color: rgba(184, 199, 220, 0.78);
+        color: #bbc7d6;
+        opacity: 1;
     }
     [data-darkmode="true"] .compact-value {
         color: #dbe9fb;
@@ -612,7 +556,7 @@
     .port-item:hover .tooltip {
         display: block;
     }
-    
+
     .sys-info-layout {
         display: grid;
         grid-template-columns: 1fr auto;
@@ -739,7 +683,21 @@
         box-sizing: border-box;
     }
     .dashboard-device-name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; min-width:0; }
-    .right-col { display: grid; gap: 10px; align-content: start; }
+    .right-col {
+        display: grid;
+        gap: 10px;
+        align-content: start;
+        width: 300px;
+        min-width: 0;
+        max-width: 300px;
+    }
+    .right-col > .mini,
+    .right-col > .card {
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
     .right-col .mini {
         position: relative;
         border: 1px solid rgba(121, 141, 164, 0.36);
@@ -758,6 +716,7 @@
     }
     .right-col .compact-value {
         font-weight: 400;
+        max-width: none;
     }
     .right-col .env-label,
     .right-col .env-value {
@@ -788,6 +747,91 @@
         color: rgba(221, 234, 250, 0.92);
     }
     .spark { height: 70px; }
+    .user-traffic-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: 12px 0;
+        min-width: 0;
+    }
+    .user-traffic-row {
+        position: relative;
+        display: grid;
+        grid-template-columns: 24px 28px minmax(0, 1fr);
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+        color: var(--text-color-high, #26313d);
+    }
+    .user-traffic-rank {
+        text-align: center;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-color-medium, #6b7280);
+        font-variant-numeric: tabular-nums;
+    }
+    .user-traffic-list .user-traffic-row:nth-child(1) .user-traffic-rank { color: #3b82f6; }
+    .user-traffic-list .user-traffic-row:nth-child(2) .user-traffic-rank { color: #06b6d4; }
+    .user-traffic-list .user-traffic-row:nth-child(3) .user-traffic-rank { color: #f59e0b; }
+    .user-traffic-avatar {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        background: var(--avatar-color, #3b82f6);
+        color: #fff;
+        font-size: 14px;
+        font-weight: 600;
+    }
+    .user-traffic-info { min-width: 0; }
+    .user-traffic-name {
+        font-size: 13px;
+        line-height: 20px;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+    .user-traffic-meter {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 60px;
+        align-items: center;
+        gap: 4px;
+    }
+    .user-traffic-track {
+        height: 5px;
+        border-radius: 3px;
+        background: rgba(121, 141, 164, 0.16);
+        overflow: hidden;
+    }
+    .user-traffic-fill {
+        display: block;
+        height: 100%;
+        border-radius: inherit;
+        background: #3b82f6;
+    }
+    .user-traffic-total {
+        font-size: 12px;
+        line-height: 20px;
+        text-align: right;
+        white-space: nowrap;
+        font-variant-numeric: tabular-nums;
+        color: var(--text-color-medium, #6b7280);
+    }
+    .user-traffic-tooltip {
+        box-sizing: border-box;
+        overflow-wrap: anywhere;
+        text-align: left;
+    }
+    .user-traffic-tooltip .tooltip-value { min-width: 0; }
+    .user-traffic-row:focus-visible {
+        outline: 2px solid #3b82f6;
+        outline-offset: 3px;
+    }
+    [data-darkmode="true"] .user-traffic-row { color: var(--text-color-high, #e5e7eb); }
+    [data-darkmode="true"] .user-traffic-rank,
+    [data-darkmode="true"] .user-traffic-total { color: var(--text-color-medium, #9ca3af); }
     .app-grid {
         display: grid;
         grid-template-columns: repeat(10, 1fr);
@@ -844,8 +888,12 @@
     }
     .app-name {
         font-size: 12px;
-        word-break: break-word;
         line-height: 1.3;
+        width: 100%;
+        min-width: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
     .active-url-list {
         display: flex;
@@ -862,6 +910,7 @@
         display: flex;
         flex-direction: row;
         align-items: center;
+        min-width: 0;
         padding: 10px 12px;
     }
     .active-url-item::after {
@@ -916,8 +965,19 @@
     .active-url-name {
         font-weight: 500;
         margin-right: 6px;
+        flex: 0 0 auto;
+        max-width: 90px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
-    .active-url-url {    }
+    .active-url-url {
+        flex: 1 1 0;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
     .active-url-item.www-highlight .active-url-url {
         color: #22c55e;
     }
@@ -926,6 +986,9 @@
         --tooltip-border: rgba(118, 136, 160, 0.34);
         --tooltip-label-color: rgba(194, 210, 228, 0.78);
         --tooltip-value-color: rgba(229, 238, 250, 0.94);
+        --tooltip-shadow: 0 10px 24px rgba(6, 12, 22, 0.40);
+    }
+    .tooltip {
         position: absolute;
         background: var(--tooltip-bg);
         border: 1px solid var(--tooltip-border);
@@ -944,6 +1007,7 @@
         --tooltip-border: rgba(151, 166, 183, 0.42);
         --tooltip-label-color: rgba(90, 106, 124, 0.86);
         --tooltip-value-color: rgba(32, 45, 62, 0.95);
+        --tooltip-shadow: 0 8px 20px rgba(40, 51, 66, 0.16);
         box-shadow: 0 8px 20px rgba(40, 51, 66, 0.16);
     }
     
@@ -1043,151 +1107,295 @@
     .app-item:hover .tooltip {
         display: block;
     }
+
+    #active-apps .tooltip {
+        box-sizing: border-box;
+        overflow-wrap: anywhere;
+    }
+    #active-apps .tooltip::before {
+        left: var(--app-tooltip-arrow, 50%);
+        transform: translateX(-50%);
+    }
     
 
     .dash {
         min-width: 800px;  
     }
     
+    .dashboard_mobile {
+        display: none;
+    }
+
     @media (max-width: 768px) {
+        #maincontent > .breadcrumb-container,
+        .breadcrumb-container {
+            display: none !important;
+        }
+
         .dash {
-            grid-template-columns: 1fr;  
+            display: none;
+        }
+        .dashboard_mobile {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
             gap: 12px;
-            padding: 0 0 6px;
-            min-width: 800px; 
+            min-width: 0;
+            padding-bottom: 12px;
         }
-        
-        .card {
-            padding: 10px;
-            min-height: auto;
+        .dashboard_mobile .card,
+        .dashboard_mobile .mini {
+            position: relative;
+            min-width: 0;
+            min-height: 0;
+            margin: 0;
+            padding: 14px;
+            border: 1px solid var(--border-color-medium);
+            border-radius: 12px;
+            background: var(--background-color-high);
+            box-shadow: none;
         }
-        
-        .card h3 {
+        .dashboard_mobile h3,
+        .dashboard_mobile .mini-title {
+            margin-bottom: 10px;
             font-size: 14px;
-            margin-bottom: 6px;
+            font-weight: 600;
         }
-        
-        .chart-container {
-            min-height: 200px;
-            height: 250px; 
-            max-height: 300px;
+        .dashboard_mobile .compact-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: baseline;
         }
-        
-        #pie-app-card, #bar-user-traffic-card {
-            min-height: 350px;
+        .dashboard_mobile .compact-value {
+            min-width: 0;
+            max-width: none !important;
+            white-space: normal;
+            overflow-wrap: anywhere;
+            text-align: right;
+            font-size: 13px;
+            font-weight: 400;
         }
-        #pie-app-card .chart-container, #bar-user-traffic-card .chart-container {
-            min-height: 300px;
-            height: 300px;
+        .dashboard_mobile .compact-label {
+            flex-shrink: 0;
         }
-        
-        .top-stats {
-            grid-template-columns: repeat(2, 1fr);  
+        .dashboard_mobile .chart-container,
+        .dashboard_mobile #pie-app-card .chart-container {
+            flex: none;
+            min-height: 0;
+            height: 280px;
+            max-height: none;
+            width: 100%;
+        }
+        .dashboard_mobile #pie-app-card,
+        .dashboard_mobile #bar-user-traffic-card {
+            min-height: 0;
+        }
+
+        .dashboard_mobile #wan-realtime-rate {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: baseline;
+            gap: 4px;
+            line-height: 1.8;
+        }
+        .dashboard_mobile .app-grid {
+            display: flex;
+            flex-wrap: nowrap;
+            align-items: flex-start;
+            gap: 12px;
+            min-width: 0;
+            padding: 6px 0 10px;
+            overflow-x: auto;
+            overscroll-behavior-x: contain;
+            scroll-snap-type: x proximity;
+            -webkit-overflow-scrolling: touch;
+        }
+        .dashboard_mobile .app-item {
+            flex: 0 0 64px;
+            min-width: 0;
+            scroll-snap-align: start;
+        }
+        .dashboard_mobile .app-icon-wrap {
+            width: 38px;
+            height: 38px;
+            border-radius: 9px;
+        }
+        .dashboard_mobile .app-name {
+            width: 100%;
+            line-height: 1.5;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .dashboard_mobile .app-grid .no-data {
+            flex: 1 0 100%;
+        }
+        .dashboard_mobile .app-item .tooltip {
+            display: none !important;
+        }
+        .dashboard_mobile .active-url-list {
+            height: auto;
+            overflow: visible;
+        }
+        .dashboard_mobile .active-url-item {
+            flex: none;
+            flex-direction: row;
+            align-items: center;
+            gap: 4px;
+            padding: 10px 0;
+            white-space: normal;
+            overflow-wrap: anywhere;
+            font-size: 13px;
+        }
+        .dashboard_mobile .active-url-url {
+            flex: 1 1 0;
+            width: auto;
+            max-width: 100%;
+            min-height: 1.4em;
+            display: block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .dashboard_mobile .tooltip {
+            min-width: 0;
+            max-width: 100%;
+            left: 0;
+            right: 0;
+            transform: none;
+            overflow-wrap: anywhere;
+        }
+        .dashboard_mobile .port-item .tooltip {
+            min-width: 260px;
+            width: min(82vw, 340px);
+            max-width: 82vw;
+            left: 50%;
+            right: auto;
+            top: calc(100% + 8px);
+            bottom: auto;
+            margin: 0;
+            transform: translateX(-50%);
+            white-space: normal;
+            overflow-wrap: anywhere;
+            pointer-events: none;
+            z-index: 1200;
+        }
+        .dashboard_mobile .port-item:nth-child(4n) .tooltip,
+        .dashboard_mobile .port-item:nth-child(5n) .tooltip {
+            left: auto;
+            right: 0;
+            transform: none;
+        }
+        .dashboard_mobile .port-item .tooltip-row {
+            display: grid;
+            grid-template-columns: 86px minmax(0, 1fr);
             gap: 8px;
+            align-items: start;
         }
-        
-        .top-stats .big {
-            font-size: 16px;
+        .dashboard_mobile .port-item .tooltip-label {
+            min-width: 0;
+            margin-right: 0;
         }
-        
-        .top-stats .mini {
-            min-height: 84px;
-            padding: 9px 10px 10px;
-            gap: 9px;
+        .dashboard_mobile .port-item .tooltip-value {
+            min-width: 0;
+            overflow-wrap: anywhere;
         }
-
-        .top-stats .stat-label {
+        .dashboard_mobile .port-item .tooltip::before,
+        .dashboard_mobile .port-item .tooltip::after {
+            display: none;
+        }
+        .dashboard_mobile .list table,
+        .dashboard_mobile .list tbody {
+            display: block;
+            width: 100%;
+        }
+        .dashboard_mobile .list thead {
+            display: none;
+        }
+        .dashboard_mobile .list tr {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px 12px;
+            padding: 12px 0;
+        }
+        .dashboard_mobile .list tr + tr {
+            border-top: 1px solid var(--border-color-medium);
+        }
+        .dashboard_mobile .list td {
+            display: block;
+            width: auto;
+            min-width: 0;
+            padding: 0;
+            border: 0;
+            white-space: normal;
+            overflow-wrap: anywhere;
+            font-size: 13px;
+        }
+        .dashboard_mobile .list td::before {
+            content: attr(data-label);
+            display: block;
+            margin-bottom: 3px;
+            color: var(--text-color-medium);
             font-size: 12px;
-            letter-spacing: 0.05em;
         }
-
-        .top-stats .stat-icon {
-            width: 22px;
-            height: 22px;
+        .dashboard_mobile .list td:first-child,
+        .dashboard_mobile .list td:last-child,
+        .dashboard_mobile .list td[colspan] {
+            grid-column: 1 / -1;
         }
-
-        .top-stats .top-stat-value {
-            font-size: 20px;
-        }
-
-        .top-stats #internet-status {
-            font-size: 15px;
-        }
-
-        .top-stats #mini-traffic {
-            font-size: 17px;
-        }
-        
-        .main-grid {
-            grid-template-columns: 1fr;  
-            gap: 10px;
-        }
-        
-        .sys-info-layout {
-            grid-template-columns: 1fr; 
-            gap: 15px;
-        }
-        
-        .mini {
-            padding: 12px 8px;
-            font-size: 11px;
-        }
-        .right-col .mini {
-            padding-left: 11px;
-            padding-right: 11px;
-        }
-        
-        .kv {
-            grid-template-columns: 80px 1fr;
-            font-size: 12px;
+        .dashboard_mobile .list td:first-child::before,
+        .dashboard_mobile .list td[colspan]::before {
+            display: none;
         }
     }
+
 </style>
 
 <div class="dash">
     <div>
         <div class="top-stats">
-            <div class="mini">
+            <a class="mini" href="<%=url('admin/fwx_network/' .. network_setting)%>">
                 <div class="stat-head">
                     <span class="stat-label"><%:Internet Status%></span>
                     <span class="stat-icon icon-sphere" aria-hidden="true"></span>
                 </div>
-                <div id="internet-status" class="top-stat-value" style="font-weight:600;"></div>
-            </div>
-            <div class="mini">
+                <div id="internet-status" class="top-stat-value"></div>
+            </a>
+            <a class="mini" href="<%=url('admin/fwx_internet_record/base_setting')%>">
                 <div class="stat-head">
                     <span class="stat-label"><%:Online App%></span>
                     <span class="stat-icon icon-application" aria-hidden="true"></span>
                 </div>
                 <div id="app-count" class="top-stat-value">0</div>
-            </div>
-            <div class="mini">
+            </a>
+            <a class="mini" href="<%=url('admin/fwx_user/list')%>">
                 <div class="stat-head">
                     <span class="stat-label"><%:Online User%></span>
                     <span class="stat-icon icon-user" aria-hidden="true"></span>
                 </div>
                 <div id="mini-online" class="top-stat-value">0</div>
-            </div>
-            <div class="mini">
+            </a>
+            <a class="mini" href="<%=url('admin/fwx_monitor/session_stat/global_session')%>">
                 <div class="stat-head">
                     <span class="stat-label"><%:Connections%></span>
                     <span class="stat-icon icon-connect" aria-hidden="true"></span>
                 </div>
                 <div id="mini-conn" class="top-stat-value">0</div>
-            </div>
-            <div class="mini">
+            </a>
+            <a class="mini" href="<%=url('admin/fwx_monitor/traffic_stat')%>">
                 <div class="stat-head">
                     <span class="stat-label"><%:Today Traffic%></span>
                     <span class="stat-icon icon-flow" aria-hidden="true"></span>
                 </div>
                 <div id="mini-traffic" class="top-stat-value">0MB</div>
-            </div>
+            </a>
         </div>
 
         <div class="main-grid">
             
 
-            <div class="card full">
+            <div class="card full" id="traffic-card">
                 <h3 id="traffic-title"><%:Real-time Traffic%></h3>
                 <div id="line-wan" class="chart-container"></div>
                 <div id="wan-realtime-rate" style="text-align: center; margin-top: 8px; font-size: 13px;">
@@ -1212,11 +1420,11 @@
                 <div id="pie-app" class="chart-container"></div>
             </div>
             <div class="card" id="bar-user-traffic-card">
-                <h3><%:User Traffic Top8%></h3>
-                <div id="bar-user-traffic" class="chart-container"></div>
+                <h3><%:Today's Traffic Ranking%></h3>
+                <div id="bar-user-traffic" class="user-traffic-list"></div>
             </div>
 
-            <div class="card list full">
+            <div class="card list full" id="active-clients-card">
                 <h3><%:Active Terminals Top8%></h3>
                 <table>
                     <thead>
@@ -1302,12 +1510,12 @@
             <div id="network-tooltip" class="tooltip tooltip-left" style="display:none;"></div>
             <div class="compact-kv" id="network-info">
                 <div class="compact-row">
-                    <span class="compact-label">LAN</span>
-                    <span class="compact-value" id="network-lan-summary">--</span>
-                </div>
-                <div class="compact-row">
                     <span class="compact-label">WAN</span>
                     <span class="compact-value" id="network-wan-summary">--</span>
+                </div>
+                <div class="compact-row">
+                    <span class="compact-label">LAN</span>
+                    <span class="compact-value" id="network-lan-summary">--</span>
                 </div>
                 <div class="compact-row">
                     <span class="compact-label"><%:Gateway%></span>
@@ -1344,11 +1552,13 @@
             </div>
         </div>
         <div class="card" id="active-url-card">
-            <h3><%:Active URL%></h3>
+            <h3><%:Active Websites%></h3>
             <div id="active-url-list" class="active-url-list"></div>
         </div>
     </div>
 </div>
+
+<div class="dashboard_mobile" id="dashboard-mobile"></div>
 
 <script type="text/javascript">//<![CDATA[
     (function() {
@@ -1378,7 +1588,6 @@
     var _AppUsageDistribution = '<%:App Usage Distribution%>';
     var _LastHour = '<%:Last Hour%>';
     var _Today = '<%:Today%>';
-    var _UserTrafficTop8 = '<%:User Traffic Top8%>';
     var _ActiveTerminalsTop8 = '<%:Active Terminals Top8%>';
     var _Name = '<%:Name%>';
     var _IP = '<%:IP%>';
@@ -1406,9 +1615,9 @@
     var _TempSpace = '<%:Temp Space%>';
     var _DiskSpace = '<%:Disk Space%>';
     var _BootSpace = '<%:Boot Space%>';
-    var _ActiveURL = '<%:Active URL%>';
+    var _ActiveURL = '<%:Active Websites%>';
     var _NoData = '<%:No Data%>';
-    var _Total = '<%:Total%>';
+    var _TotalTraffic = '<%:Total Traffic%>';
     var _Day = '<%:Day%>';
     var _Hour = '<%:Hour%>';
     var _Minute = '<%:Minute%>';
@@ -1530,6 +1739,13 @@
         return Math.max(0, n);
     }
 
+    function isMobileDashboard() {
+        var narrowScreen = window.matchMedia ?
+            window.matchMedia('(max-width: 768px)').matches : window.innerWidth <= 768;
+        return narrowScreen ||
+            /Android|iPhone|iPod|Mobile/i.test(navigator.userAgent || '');
+    }
+
     function fetchDashboardCommon(){
         new XHR().get('<%=url("admin/dashboard_api/get_dashboard_common")%>', null, function(x, data){
             if(data){
@@ -1544,7 +1760,7 @@
     }
 
     function fetchInitStatusOnce(){
-        if (initStatusFetched) {
+        if (initStatusFetched || isMobileDashboard()) {
             return;
         }
         initStatusFetched = true;
@@ -1805,7 +2021,7 @@
 
     function removeModeSwitchGuideBubble() {
         $('#mode-switch-guide-bubble').remove();
-        $(window).off('resize.mode_guide scroll.mode_guide');
+        $(window).add('#maincontent').off('resize.mode_guide scroll.mode_guide');
         $(document).off('click.mode_guide_ack');
     }
 
@@ -1840,6 +2056,10 @@
     }
 
     function updateModeSwitchGuide() {
+        if (isMobileDashboard()) {
+            removeModeSwitchGuideBubble();
+            return;
+        }
         if (!(shouldShowModeSwitchGuide && !modeSwitchGuideDismissed)) {
             removeModeSwitchGuideBubble();
             modeSwitchGuideRetryCount = 0;
@@ -1870,7 +2090,7 @@
         }
         modeSwitchGuideRetryCount = 0;
 
-        $(window).off('resize.mode_guide scroll.mode_guide').on('resize.mode_guide scroll.mode_guide', function() {
+        $(window).add('#maincontent').off('resize.mode_guide scroll.mode_guide').on('resize.mode_guide scroll.mode_guide', function() {
             positionModeSwitchGuideBubble();
         });
 
@@ -1948,12 +2168,12 @@
         
         if(sys.connections !== undefined) {
             $('#sys-connections').text(sys.connections);
-            $('#mini-conn').text(sys.connections);
+            $('#mini-conn').text(sys.connections).attr('title', String(sys.connections));
         }
         
         if(sys.client_num !== undefined) {
             $('#sys-client-num').text(sys.client_num);
-            $('#mini-online').text(sys.client_num);
+            $('#mini-online').text(sys.client_num).attr('title', String(sys.client_num));
         }
         
         var hasOverlayStorage = false;
@@ -1992,7 +2212,8 @@
             var todayUp = parseInt(sys.flow.today_up) || 0; // KB
             var todayDown = parseInt(sys.flow.today_down) || 0; // KB
             var totalFlowKB = todayUp + todayDown;
-            $('#mini-traffic').text(formatTraffic(totalFlowKB * 1024));
+            var trafficDisplay = formatTraffic(totalFlowKB * 1024);
+            $('#mini-traffic').text(trafficDisplay).attr('title', trafficDisplay);
         }
         
         if(sys.cpu !== undefined){
@@ -2095,10 +2316,7 @@
                         statusText = _Unknown;
                         statusColor = '#6b7280'; 
                 }
-                $internetStatusEl.text(statusText).css({
-                    'color': statusColor,
-                    'font-weight': '400'  
-                });
+                $internetStatusEl.text(statusText).attr('title', statusText).css('color', statusColor);
             }
         }
         
@@ -2109,9 +2327,9 @@
         updateActiveApps(appList);
         
         if(apps.total !== undefined){
-            $('#app-count').text(apps.total);
+            $('#app-count').text(apps.total).attr('title', String(apps.total));
         } else {
-            $('#app-count').text('0');
+            $('#app-count').text('0').attr('title', '0');
         }
         
         if(traffic.interface && traffic.traffic){
@@ -2142,11 +2360,58 @@
     
     setBar('storage-overlay-bar','',0);
     
+    var dashboard_media = window.matchMedia('(max-width: 768px)');
+    var latest_active_apps = null;
+
+    function init_dashboard_mobile() {
+        var mobile_container = document.getElementById('dashboard-mobile');
+        var card_ids = [
+            'sys-info-card', 'running-status-card', 'active-app-card',
+            'traffic-card', 'active-url-card', 'network-card',
+            'port-status-card', 'env-storage-card', 'pie-app-card',
+            'bar-user-traffic-card', 'active-clients-card'
+        ];
+        var cards = card_ids.map(function(id) {
+            var card = document.getElementById(id);
+            var marker = document.createComment(id);
+            card.parentNode.insertBefore(marker, card);
+            return { card: card, marker: marker };
+        });
+        function update_layout() {
+            cards.forEach(function(item) {
+                if (dashboard_media.matches)
+                    mobile_container.appendChild(item.card);
+                else
+                    item.marker.parentNode.insertBefore(item.card, item.marker.nextSibling);
+            });
+            $('#active-url-list .active-url-url').each(function() {
+                fit_active_url(this);
+            });
+            if (latest_active_apps)
+                updateActiveApps(latest_active_apps);
+        }
+        dashboard_media.addEventListener('change', update_layout);
+        update_layout();
+    }
+
+    init_dashboard_mobile();
+
+    function fit_active_urls() {
+        $('#active-url-list .active-url-url').each(function() { fit_active_url(this); });
+    }
+    var active_url_list = document.getElementById('active-url-list');
+    if (active_url_list) {
+        new MutationObserver(fit_active_urls).observe(active_url_list, { childList: true });
+        if (window.ResizeObserver)
+            new ResizeObserver(fit_active_urls).observe(active_url_list);
+        window.addEventListener('resize', fit_active_urls);
+    }
+
     var TRAFFIC_SAMPLE_POINTS = 60;
     var FWX_ECHART_RENDERER = 'svg';
     var pieApp = echarts.init($('#pie-app')[0], null, { renderer: FWX_ECHART_RENDERER });
     var lineWan = echarts.init($('#line-wan')[0], null, { renderer: FWX_ECHART_RENDERER });
-    var barUserTraffic = echarts.init($('#bar-user-traffic')[0], null, { renderer: FWX_ECHART_RENDERER });
+
 
 
     function getCSSVariable(name, defaultValue) {
@@ -2183,8 +2448,7 @@
         '#fda4af',
         '#14b8a6'
     ];
-    var userTrafficUpColor = '#58a6ff';
-    var userTrafficDownColor = '#8b7bff';
+
     
     var currentAppStatsType = 'daily';
     
@@ -2376,149 +2640,7 @@
         }, 3000);
     }, 1500);
 
-    barUserTraffic.setOption({
-        backgroundColor: 'transparent',
-        color: [userTrafficUpColor, userTrafficDownColor],
-        textStyle: { color: axisLabelColor },
-        tooltip: {
-            trigger: 'item', 
-            axisPointer: { type: 'shadow' },
-            backgroundColor: tooltipBg,
-            textStyle: { color: tooltipText }, 
-            formatter: function(params) {
-                if (params.seriesName !== _Downstream) {
-                    return '';
-                }
-                var user = params.data.user;
-                if (!user) {
-                    return '';
-                }
-                var nameInfo = formatUserDisplayName(user);
-                var displayName = nameInfo.display;
-                var fullName = nameInfo.full;
-                var upStr = formatTraffic(user.up_bytes);
-                var downStr = formatTraffic(user.down_bytes);
-                var totalStr = formatTraffic(user.total_bytes);
-                return displayName + '<br/>' +
-                       'MAC: ' + (user.mac || '') + '<br/>' +
-                       _IP + ': ' + user.ip + '<br/>' +
-                       '<span style="color:' + userTrafficUpColor + ';">&bull;</span> ' + _Upstream + ': ' + upStr + '<br/>' +
-                       '<span style="color:' + userTrafficDownColor + ';">&bull;</span> ' + _Downstream + ': ' + downStr + '<br/>' +
-                       _Total + ': ' + totalStr;
-            },
-            confine: true 
-        },
-        legend: {
-            show: true,
-            bottom: 0,
-            textStyle: { color: axisLabelColor },
-            data: [_Upstream, _Downstream]
-        },
-        grid: {
-            left: '8%',  
-            right: '10%',  
-            top: '2%',  
-            bottom: '12%',  
-            containLabel: false
-        },
-        xAxis: {
-            type: 'value',
-            position: 'bottom',
-            min: 0,  
-            axisLabel: {
-                color: axisLabelColor,
-                fontSize: 10,
-                formatter: function(value) {
-                    return formatTraffic(value);
-                }
-            },
-            axisLine: {
-                show: true,
-                lineStyle: { color: axisLineColor } 
-            },
-            splitLine: {
-                show: false  
-            },
-            splitNumber: 6  
-        },
-        yAxis: [
-            {
-                type: 'category',
-                position: 'left',
-                boundaryGap: false,  
-                axisLabel: {
-                    color: axisLabelColor,
-                    fontSize: 12,
-                    fontWeight: 'bold',
-                    formatter: function(value, index) {
-                        return (index + 1).toString();
-                    }
-                },
-                axisLine: {
-                    show: true,
-                    lineStyle: { color: axisLineColor } 
-                },
-                splitLine: {
-                    show: false  
-                },
-                data: []
-            },
-            {
-                type: 'category',
-                position: 'right',
-                axisLabel: {
-                    show: false  
-                },
-                axisLine: {
-                    show: false
-                },
-                splitLine: {
-                    show: false
-                },
-                data: []
-            }
-        ],
-        series: [
-            {
-                name: _Upstream,
-                type: 'bar',
-                stack: 'traffic', 
-                data: [],
-                barWidth: 25,
-                barCategoryGap: '50%',
-                label: {
-                    show: false  
-                }
-            },
-            {
-                name: _Downstream,
-                type: 'bar',
-                stack: 'traffic', 
-                data: [],
-                barWidth: 25,
-                barCategoryGap: '50%',
-                label: {
-                    show: true, 
-                    position: 'right',  
-                    color: axisLabelColor,
-                    fontSize: 11,
-                    formatter: function(params) {
-                        if (params.seriesName === _Downstream) {
-                            if (params.data.user) {
-                                var nameInfo = formatUserDisplayName(params.data.user);
-                                var displayName = nameInfo.display;
-                                var totalBytes = (params.data.user.up_bytes || 0) + (params.data.user.down_bytes || 0);
-                                var totalTraffic = formatTraffic(totalBytes);
-                                return displayName + '(' + totalTraffic + ')';
-                            }
-                        }
-                        return '';
-                    },
-                    distance: 5 
-                }
-            }
-        ]
-    });
+
 
     var clientData = [];
  
@@ -2562,13 +2684,7 @@
         
         var isGatewayMode = networkData.isGatewayMode !== undefined ? networkData.isGatewayMode : (wan && wan.ip && wan.ip !== '0.0.0.0' && wan.ip !== '');
         
-        var html = '<div class="tooltip-row"><span class="tooltip-label" style="font-weight:600;">LAN:</span></div>' +
-                   '<div class="tooltip-row"><span class="tooltip-label">' + _IPAddress + ':</span><span class="tooltip-value">' + formatEmptyValue(lan.ip) + '</span></div>' +
-                   '<div class="tooltip-row"><span class="tooltip-label">' + _Mask + ':</span><span class="tooltip-value">' + formatEmptyValue(lan.mask) + '</span></div>' +
-                   '<div class="tooltip-row"><span class="tooltip-label">IPv6:</span><span class="tooltip-value">' + formatEmptyValue(lan.ipv6) + '</span></div>' +
-                   '<div class="tooltip-row"><span class="tooltip-label">' + _Gateway + ':</span><span class="tooltip-value">' + formatEmptyValue(lan.gateway) + '</span></div>' +
-                   '<div class="tooltip-row"><span class="tooltip-label">' + _DNS + ':</span><span class="tooltip-value">' + formatEmptyValue(lan.dns) + '</span></div>' +
-                   '<div class="tooltip-row" style="margin-top:8px;"><span class="tooltip-label" style="font-weight:600;">WAN:</span></div>' +
+        var html = '<div class="tooltip-row"><span class="tooltip-label" style="font-weight:600;">WAN:</span></div>' +
                    '<div class="tooltip-row"><span class="tooltip-label">' + _IPAddress + ':</span><span class="tooltip-value">' + formatEmptyValue(wan.ip) + '</span></div>' +
                    '<div class="tooltip-row"><span class="tooltip-label">' + _Mask + ':</span><span class="tooltip-value">' + formatEmptyValue(wan.mask) + '</span></div>' +
                    '<div class="tooltip-row"><span class="tooltip-label">IPv6:</span><span class="tooltip-value">' + formatEmptyValue(wan.ipv6) + '</span></div>';
@@ -2579,6 +2695,12 @@
             html += '<div class="tooltip-row"><span class="tooltip-label">' + _Gateway + ':</span><span class="tooltip-value">' + formatEmptyValue(lan.gateway) + '</span></div>' +
                     '<div class="tooltip-row"><span class="tooltip-label">' + _DNS + ':</span><span class="tooltip-value">' + formatEmptyValue(lan.dns) + '</span></div>';
         }
+        html += '<div class="tooltip-row" style="margin-top:8px;"><span class="tooltip-label" style="font-weight:600;">LAN:</span></div>' +
+                '<div class="tooltip-row"><span class="tooltip-label">' + _IPAddress + ':</span><span class="tooltip-value">' + formatEmptyValue(lan.ip) + '</span></div>' +
+                '<div class="tooltip-row"><span class="tooltip-label">' + _Mask + ':</span><span class="tooltip-value">' + formatEmptyValue(lan.mask) + '</span></div>' +
+                '<div class="tooltip-row"><span class="tooltip-label">IPv6:</span><span class="tooltip-value">' + formatEmptyValue(lan.ipv6) + '</span></div>' +
+                '<div class="tooltip-row"><span class="tooltip-label">' + _Gateway + ':</span><span class="tooltip-value">' + formatEmptyValue(lan.gateway) + '</span></div>' +
+                '<div class="tooltip-row"><span class="tooltip-label">' + _DNS + ':</span><span class="tooltip-value">' + formatEmptyValue(lan.dns) + '</span></div>';
         $tooltip.html(html);
     }
 
@@ -2744,7 +2866,7 @@
             backgroundColor: tooltipBg,
             textStyle: { color: tooltipText },
             formatter:function(p){
-                return _Upstream + ': '+bytes(p[0].data)+'<br/>'+_Downstream + ': '+bytes(p[1].data);
+                return _Upload + ': '+bytes(p[0].data)+'<br/>'+_Download + ': '+bytes(p[1].data);
             }
         },
         grid: {
@@ -2785,7 +2907,7 @@
         },
         series:[
             { 
-                name:_Upstream, 
+                name:_Upload, 
                 type:'line', 
                 smooth:true, 
                 symbol:'none', 
@@ -2796,7 +2918,7 @@
                 data:up 
             },
             { 
-                name:_Downstream, 
+                name:_Download, 
                 type:'line', 
                 smooth:true, 
                 symbol:'none', 
@@ -2822,34 +2944,66 @@
     var $tbody = $('#client-body');
     var activeUsersData = [];
     var activeUsersByMac = {};
+    var activeAppIconCache = {};
 
     function floorFixed(value, digits) {
         var scale = Math.pow(10, digits);
         return (Math.floor(value * scale) / scale).toFixed(digits);
     }
-    
+
+    function formatUnitNumber(value, unitIndex, options) {
+        var digits = options.decimals == null ? 1 : options.decimals;
+        var compactMax = options.compactMaxUnitIndex == null ? -1 : options.compactMaxUnitIndex;
+        var text;
+        if (digits > 0 && !(unitIndex <= compactMax && value >= 10)) {
+            text = floorFixed(value, digits);
+            return text.replace(/\.0+$/, '');
+        }
+        return String(Math.floor(value));
+    }
+
+    function formatUnitValue(rawValue, options) {
+        options = options || {};
+        var base = options.base || 1024;
+        var units = options.units || ['B', 'KB', 'MB', 'GB'];
+        var value = Number(rawValue) || 0;
+        var absValue = Math.abs(value);
+        var unitIndex = 0;
+        var minUnitIndex = options.minUnitIndex || 0;
+        var suffix = options.suffix || '';
+        var separator = options.separator == null ? ' ' : options.separator;
+
+        while (absValue >= base && unitIndex < units.length - 1) {
+            value = value / base;
+            absValue = absValue / base;
+            unitIndex++;
+        }
+        while (unitIndex < minUnitIndex && unitIndex < units.length - 1) {
+            value = value / base;
+            unitIndex++;
+        }
+        return formatUnitNumber(value, unitIndex, options) + separator + units[unitIndex] + suffix;
+    }
+
     function formatRate(bytesPerSec) {
-        var value = Number(bytesPerSec) || 0;
-        if (value >= 1024 * 1024) {
-            return floorFixed(value / (1024 * 1024), 1) + ' MB/s';
-        }
-        if (value >= 1024) {
-            return Math.floor(value / 1024) + ' KB/s';
-        }
-        return Math.floor(value) + ' B/s';
+        return formatUnitValue(bytesPerSec, {
+            units: ['B', 'KB', 'MB', 'GB'],
+            suffix: '/s',
+            decimals: 1,
+            compactMaxUnitIndex: 2
+        });
     }
-    
+
     function formatTraffic(bytes) {
-        var value = Number(bytes) || 0;
-        if (value >= 1024 * 1024 * 1024) {
-            return floorFixed(value / (1024 * 1024 * 1024), 1) + ' GB';
-        }
-        if (value >= 1024 * 1024) {
-            return floorFixed(value / (1024 * 1024), 1) + ' MB';
-        }
-        return Math.floor(value / 1024) + ' KB';
+        return formatUnitValue(bytes, {
+            units: ['B', 'KB', 'MB', 'GB'],
+            minUnitIndex: 1,
+            decimals: 1,
+            compactMaxUnitIndex: 2,
+            separator: ''
+        });
     }
-    
+
     function formatUserDisplayName(user) {
         if (!user) {
             return { display: '', full: '' };
@@ -2996,6 +3150,12 @@
                 '</tr>';
         }).join('');
         $tbody.html(rows);
+        var labels = $('#active-clients-card th').map(function() { return $(this).text(); }).get();
+        $tbody.find('tr').each(function() {
+            $(this).children('td').each(function(index) {
+                $(this).attr('data-label', labels[index]);
+            });
+        });
     }
 
     function formatTime(timestamp){
@@ -3003,6 +3163,28 @@
         return d.getFullYear()+'-'+(d.getMonth()+1).toString().padStart(2,'0')+'-'+d.getDate().toString().padStart(2,'0')+' '+
                d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0')+':'+d.getSeconds().toString().padStart(2,'0');
     }
+    function position_active_app_tooltip() {
+        if (dashboard_media.matches) return;
+        var tooltip = $(this).children('.tooltip')[0];
+        if (!tooltip) return;
+        var bounds = document.getElementById('active-apps').getBoundingClientRect();
+        var item = this.getBoundingClientRect();
+        var left_edge = Math.max(8, bounds.left);
+        var right_edge = Math.min(document.documentElement.clientWidth - 8, bounds.right);
+        var available = Math.max(0, right_edge - left_edge);
+        $(tooltip).css({
+            minWidth: Math.min(280, available) + 'px',
+            maxWidth: available + 'px',
+            left: '50%',
+            transform: 'translateX(-50%)'
+        });
+        var width = tooltip.getBoundingClientRect().width;
+        var center = item.left + item.width / 2;
+        var left = Math.max(left_edge, Math.min(center - width / 2, right_edge - width));
+        $(tooltip).css({ left: (left - item.left) + 'px', transform: 'none' });
+        tooltip.style.setProperty('--app-tooltip-arrow', Math.max(12, Math.min(width - 12, center - left)) + 'px');
+    }
+
     function updateActiveApps(appList){
         var $container = $('#active-apps');
         
@@ -3012,6 +3194,8 @@
             appList = [];
         }
         
+        latest_active_apps = appList;
+        var scroll_left = $container.scrollLeft();
         $container.empty();
         
         if(!appList || appList.length === 0) {
@@ -3036,7 +3220,7 @@
             return _APP_LETTER_COLORS[Math.abs(hash) % _APP_LETTER_COLORS.length];
         }
 
-        var displayList = appList.slice(0, 10);
+        var displayList = dashboard_media.matches ? appList : appList.slice(0, 10);
         displayList.forEach(function(app){
             var $appItem = $('<div>').addClass('app-item');
             var $iconWrap = $('<span>').addClass('app-icon-wrap')
@@ -3046,16 +3230,36 @@
             var $letterIcon = $('<div>').addClass('app-icon-letter')
                 .css('background', appLetterColor(appDisplayName))
                 .text(appDisplayName.charAt(0).toUpperCase());
-            $iconWrap.append($letterIcon);
-            if (appId) {
+            function showLetterIcon() {
+                $iconWrap.empty().append($letterIcon.clone());
+            }
+            function showImageIcon(src) {
+                $iconWrap.empty().append($('<img>').addClass('app-icon').attr('src', src).attr('alt', appDisplayName));
+            }
+            if (appId && Number(app.icon) !== 0) {
                 var iconSrc = '<%=resource%>/app_icons/' + encodeURIComponent(appId) + '.png';
-                var iconLoader = new Image();
-                iconLoader.onload = (function($wrap, src, alt) {
-                    return function() {
-                        $wrap.empty().append($('<img>').addClass('app-icon').attr('src', src).attr('alt', alt));
-                    };
-                })($iconWrap, iconSrc, appDisplayName);
-                iconLoader.src = iconSrc;
+                if (activeAppIconCache[appId] === true) {
+                    showImageIcon(iconSrc);
+                } else if (activeAppIconCache[appId] === false) {
+                    showLetterIcon();
+                } else {
+                    showLetterIcon();
+                    var iconLoader = new Image();
+                    iconLoader.onload = (function(src, id) {
+                        return function() {
+                            activeAppIconCache[id] = true;
+                            showImageIcon(src);
+                        };
+                    })(iconSrc, appId);
+                    iconLoader.onerror = (function(id) {
+                        return function() {
+                            activeAppIconCache[id] = false;
+                        };
+                    })(appId);
+                    iconLoader.src = iconSrc;
+                }
+            } else {
+                showLetterIcon();
             }
             var $nameSpan = $('<div>').addClass('app-name').text(app.name || ('app' + app.id));
             var $tooltip = $('<div>').addClass('tooltip tooltip-top tooltip-arrow-center tooltip-center-x');
@@ -3073,8 +3277,11 @@
             if(app.domain) tooltipHtml += '<div class="tooltip-row"><span class="tooltip-label">' + _MatchedDomain + ':</span><span class="tooltip-value">'+app.domain+'</span></div>';
             $tooltip.html(tooltipHtml);
             $appItem.append($iconWrap).append($nameSpan).append($tooltip);
+            $appItem.on('mouseenter', position_active_app_tooltip);
             $container.append($appItem);
         });
+        if (dashboard_media.matches)
+            $container.scrollLeft(scroll_left);
     }
     
     function extractDomain(url) {
@@ -3089,15 +3296,33 @@
         return url.toLowerCase().startsWith('https://');
     }
     
-    function truncateUrl(url, maxLength) {
-        if (!url || typeof url !== 'string') return '';
-        if (url.length <= maxLength) return url;
-        
-        var frontLength = 12;
-        var backLength = 12;
-        var front = url.substring(0, frontLength);
-        var back = url.substring(url.length - backLength);
-        return front + '...' + back;
+    function fit_active_url(element) {
+        var full = element.getAttribute('data-full-url') || '--';
+        var width = element.clientWidth;
+        if (!width) return;
+        var context = document.createElement('canvas').getContext('2d');
+        var style = window.getComputedStyle(element);
+        context.font = style.fontWeight + ' ' + style.fontSize + ' ' + style.fontFamily;
+        var display = full;
+        if (context.measureText(full).width > width) {
+            var protocol = getUrlProtocol(full);
+            var host = full.slice(protocol.length);
+            var low = 0, high = host.length;
+            display = protocol + '...';
+            while (low <= high) {
+                var keep = Math.floor((low + high) / 2);
+                var front = Math.ceil(keep / 2);
+                var back = Math.floor(keep / 2);
+                var candidate = protocol + host.slice(0, front) + '...' + (back ? host.slice(-back) : '');
+                if (context.measureText(candidate).width <= width) {
+                    display = candidate;
+                    low = keep + 1;
+                } else {
+                    high = keep - 1;
+                }
+            }
+        }
+        element.textContent = display;
     }
     
     function isMacAddress(str) {
@@ -3182,9 +3407,9 @@
     
     var userColors = [
         '#38bdf8',
-        '#f97316',
+        '#14b8a6',
         '#c084fc',
-        '#ec4899',
+        '#3b82f6',
         '#84cc16'
     ];
     
@@ -3210,13 +3435,7 @@
             $item.addClass('www-highlight');
         }
         
-        var protocol = getUrlProtocol(fullUrl);
-        
-        var urlWithoutProtocol = fullUrl.replace(/^https?:\/\//i, '');
-        var displayUrl = urlWithoutProtocol || '--';
-        if (displayUrl !== '--' && displayUrl.length > 24) {
-            displayUrl = truncateUrl(urlWithoutProtocol, 24);
-        }
+        var displayUrl = getUrlProtocol(fullUrl) + extractDomain(fullUrl) || '--';
         
         var nameInfo = formatUserName(host.name, host.mac);
         var displayName = nameInfo.display;
@@ -3232,7 +3451,9 @@
                 $name.attr('title', fullName);
             }
         }
-        var $url = $('<span>').addClass('active-url-url').text(displayUrl);
+        var $url = $('<span>').addClass('active-url-url')
+            .attr('data-full-url', displayUrl)
+            .text(displayUrl);
         
         $item.append($name).append($url);
         
@@ -3452,221 +3673,139 @@
         updateWanRealtimeRate(lastUp, lastDown);
     }
 
-    function updateUserTrafficChart(data){
-        if(!data || !data.users || !Array.isArray(data.users)) {
-            barUserTraffic.setOption({
-                yAxis: [
-                    { data: [] },
-                    { data: [] }
-                ],
-                series: [
-                    { name: _Upstream, data: [] },
-                    { name: _Downstream, data: [] }
-                ]
-            });
+    function position_user_traffic_tooltip() {
+        var $tooltip = $(this).children('.tooltip');
+        var bounds = document.getElementById('bar-user-traffic').getBoundingClientRect();
+        var row = this.getBoundingClientRect();
+        var left_edge = Math.max(8, bounds.left);
+        var right_edge = Math.min(document.documentElement.clientWidth - 8, bounds.right);
+        var available = Math.max(0, right_edge - left_edge);
+        $tooltip.css({
+            display: 'block',
+            minWidth: Math.min(280, available) + 'px',
+            maxWidth: available + 'px'
+        });
+        var box = $tooltip[0].getBoundingClientRect();
+        var left = Math.max(left_edge, Math.min(row.left + 24, right_edge - box.width));
+        var top = row.bottom + 6;
+        if (top + box.height > window.innerHeight - 8) top = row.top - box.height - 6;
+        top = Math.max(8, Math.min(top, window.innerHeight - box.height - 8));
+        $tooltip.css({ left: (left - row.left) + 'px', top: (top - row.top) + 'px' });
+    }
+
+    function updateUserTrafficChart(data) {
+        var $container = $('#bar-user-traffic').empty();
+        var users = data && Array.isArray(data.users) ? data.users.filter(function(user) {
+            return user && typeof user === 'object';
+        }) : [];
+        cacheUsersByMac(users);
+        function valid_bytes(value) {
+            if (typeof value !== 'number' && typeof value !== 'string') return null;
+            if (typeof value === 'string' && !value.trim()) return null;
+            var number = Number(value);
+            return isFinite(number) && number >= 0 ? number : null;
+        }
+        var ranked_users = users.map(function(user, index) {
+            var total = valid_bytes(user.total_bytes);
+            if (total === null) total = (valid_bytes(user.up_bytes) || 0) + (valid_bytes(user.down_bytes) || 0);
+            return { user: user, total: total, index: index };
+        }).sort(function(a, b) {
+            return b.total - a.total || a.index - b.index;
+        }).slice(0, 8);
+        if (!ranked_users.length) {
+            $container.append($('<div>').addClass('no-data').text(_NoData));
             return;
         }
-        
-        var users = data.users || [];
-        cacheUsersByMac(users);
-        var names = [];
-        var upValues = [];
-        var downValues = [];
-        
-        users.forEach(function(user){
-            var nameInfo = formatUserDisplayName(user);
-            var displayName = nameInfo.display || _Unknown;
-            var fullName = nameInfo.full;
-            names.push(displayName);
-            
-            var userInfo = {
-                name: displayName,  
-                fullName: fullName, 
-                mac: user.mac || '',
-                ip: user.ip || '',
-                hostname: user.hostname || '',
-                nickname: user.nickname || '',
-                up_bytes: user.up_bytes || 0,
-                down_bytes: user.down_bytes || 0,
-                total_bytes: user.total_bytes || 0,
-                _rawUser: user
-            };
-            
-            upValues.push({
-                value: user.up_bytes || 0,
-                user: userInfo
+        var maximum = ranked_users[0].total;
+        ranked_users.forEach(function(entry, index) {
+            var user = entry.user;
+            var name = String(user.nickname || '').trim() ||
+                String(user.hostname || '').trim() || String(user.mac || '').trim() || '--';
+            var traffic = formatTraffic(entry.total);
+            var percent = maximum > 0 ? entry.total / maximum * 100 : 0;
+            var $row = $('<div>').addClass('user-traffic-row').attr('tabindex', '0');
+            var $rank = $('<span>').addClass('user-traffic-rank').text(index + 1);
+            var $avatar = $('<span>').addClass('user-traffic-avatar')
+                .css('--avatar-color', deviceIconColor(name))
+                .text(name === '--' ? '?' : name.charAt(0).toUpperCase());
+            var $info = $('<div>').addClass('user-traffic-info');
+            var $meter = $('<div>').addClass('user-traffic-meter');
+            var $track = $('<div>').addClass('user-traffic-track').attr('aria-hidden', 'true')
+                .append($('<span>').addClass('user-traffic-fill').css('width', percent + '%'));
+            $meter.append($track).append($('<span>').addClass('user-traffic-total').text(traffic));
+            $info.append($('<div>').addClass('user-traffic-name').text(name)).append($meter);
+            var $tooltip = $('<div>').addClass('tooltip user-traffic-tooltip');
+            [[_User, name], ['MAC', user.mac || '--'], [_IP, user.ip || '--'],
+                [_UpstreamTraffic, formatTraffic(valid_bytes(user.up_bytes) || 0)],
+                [_DownstreamTraffic, formatTraffic(valid_bytes(user.down_bytes) || 0)],
+                [_TotalTraffic, traffic]].forEach(function(pair) {
+                $tooltip.append($('<div>').addClass('tooltip-row')
+                    .append($('<span>').addClass('tooltip-label').text(pair[0] + ':'))
+                    .append($('<span>').addClass('tooltip-value').text(pair[1])));
             });
-            
-            downValues.push({
-                value: user.down_bytes || 0,
-                user: userInfo
-            });
-        });
-        
-        names.reverse();
-        upValues.reverse();
-        downValues.reverse();
-        
-        var userCount = users.length;
-        var gridConfig = {
-            left: '8%', 
-            right: '10%',
-            top: '2%',  
-            bottom: '12%', 
-            containLabel: false
-        };
-        
-        var maxTraffic = 0;
-        users.forEach(function(user) {
-            var total = (user.up_bytes || 0) + (user.down_bytes || 0);
-            if (total > maxTraffic) {
-                maxTraffic = total;
-            }
-        });
-        
-        var calculatedMax = maxTraffic * 1.15;
-        
-        var boundaryGapConfig = [0, 0]; 
-        var barCategoryGapValue = '50%'; 
-        
-        if (userCount <= 3) {
-            boundaryGapConfig = [0, 0.5];
-            barCategoryGapValue = 10;
-        } else {
-            boundaryGapConfig = [0, 0];
-            barCategoryGapValue = '50%';
-        }
-        
-        barUserTraffic.setOption({
-            grid: gridConfig,
-            xAxis: {
-                min: 0, 
-                max: calculatedMax 
-            },
-            yAxis: [
-                {
-                    data: names,
-                    boundaryGap: boundaryGapConfig, 
-                    axisLabel: {
-                        formatter: function(value, index) {
-                            return (names.length - index).toString();
-                        }
-                    }
-                },
-                {
-                    data: names,
-                    boundaryGap: boundaryGapConfig,  
-                    axisLabel: {
-                        show: false 
-                    }
-                }
-            ],
-            series: [
-                { 
-                    name: _Upstream,
-                    data: upValues,
-                    barWidth: 25,
-                    barCategoryGap: barCategoryGapValue,  
-                    label: {
-                        show: false 
-                    }
-                },
-                { 
-                    name: _Downstream,
-                    data: downValues,
-                    barWidth: 25,
-                    barCategoryGap: barCategoryGapValue, 
-                    label: {
-                        show: true,  
-                        position: 'right', 
-                        color: axisLabelColor,
-                        fontSize: 11,
-                        formatter: function(params) {
-                            if (params.data.user) {
-                                var totalBytes = (params.data.user.up_bytes || 0) + (params.data.user.down_bytes || 0);
-                                var totalTraffic = formatTraffic(totalBytes);
-                                
-                                var maxValue = calculatedMax;
-                                var percentage = totalBytes / maxValue;
-                                
-                                var rawUser = params.data.user._rawUser || params.data.user;
-                                var rawName = '';
-                                if (rawUser.nickname && rawUser.nickname.trim() !== '') {
-                                    rawName = rawUser.nickname;
-                                } else if (rawUser.hostname && rawUser.hostname.trim() !== '') {
-                                    rawName = rawUser.hostname;
-                                } else {
-                                    rawName = rawUser.mac || '';
-                                }
-                                
-                                var displayName = rawName;
-                                
-                                if (percentage < 0.5) {
-                                    if (isMacAddress(displayName)) {
-                                        displayName = formatMacAddress(displayName);
-                                    } else if (displayName) {
-                                        if (hasChinese(displayName)) {
-                                            var chineseChars = displayName.match(/[\u4e00-\u9fa5]/g);
-                                            if (chineseChars && chineseChars.length > 10) {
-                                                var count = 0;
-                                                var index = 0;
-                                                for (var i = 0; i < displayName.length; i++) {
-                                                    if (/[\u4e00-\u9fa5]/.test(displayName[i])) {
-                                                        count++;
-                                                        if (count === 10) {
-                                                            index = i + 1;
-                                                            break;
-                                                        }
-                                                    }
-                                                }
-                                                displayName = displayName.substring(0, index) + '...';
-                                            }
-                                        } else {
-                                            if (displayName.length > 20) {
-                                                displayName = displayName.substring(0, 17) + '...';
-                                            }
-                                        }
-                                    }
-                                } else {
-                                    if (isMacAddress(displayName)) {
-                                        displayName = formatMacAddress(displayName);
-                                    } else if (displayName) {
-                                        if (hasChinese(displayName)) {
-                                            var chineseChars = displayName.match(/[\u4e00-\u9fa5]/g);
-                                            if (chineseChars && chineseChars.length > 5) {
-                                                var count = 0;
-                                                var index = 0;
-                                                for (var i = 0; i < displayName.length; i++) {
-                                                    if (/[\u4e00-\u9fa5]/.test(displayName[i])) {
-                                                        count++;
-                                                        if (count === 5) {
-                                                            index = i + 1;
-                                                            break;
-                                                        }
-                                                    }
-                                                }
-                                                displayName = displayName.substring(0, index) + '...';
-                                            }
-                                        } else {
-                                            if (displayName.length > 12) {
-                                                var front = displayName.substring(0, 6);
-                                                var back = displayName.substring(displayName.length - 6);
-                                                displayName = front + '...' + back;
-                                            }
-                                        }
-                                    }
-                                }
-                                
-                                return displayName + '(' + totalTraffic + ')';
-                            }
-                            return '';
-                        },
-                        distance: 5
-                    }
-                }
-            ]
+            $row.append($rank, $avatar, $info, $tooltip)
+                .on('mouseenter focusin', position_user_traffic_tooltip)
+                .on('mouseleave focusout', function() { $tooltip.hide(); });
+            $container.append($row);
         });
     }
 
+
+    function init_dashboard_chart_layout() {
+        var charts = [lineWan, pieApp];
+        var desktop_options = charts.map(function(chart) {
+            var option = chart.getOption();
+            return {
+                grid: option.grid,
+                legend: option.legend,
+                tooltip: { confine: !!option.tooltip[0].confine }
+            };
+        });
+        var pie_series = pieApp.getOption().series[0];
+        var desktop_pie = {
+            radius: pie_series.radius,
+            center: pie_series.center,
+            label: { show: pie_series.label.show },
+            labelLine: { show: pie_series.labelLine.show }
+        };
+        var resize_frame;
+        function resize_charts() {
+            cancelAnimationFrame(resize_frame);
+            resize_frame = requestAnimationFrame(function() {
+                charts.forEach(function(chart) { chart.resize(); });
+            });
+        }
+        function update_chart_layout() {
+            if (dashboard_media.matches) {
+                lineWan.setOption({
+                    grid: { left: 4, right: 8, top: 24, bottom: 8, containLabel: true },
+                    tooltip: { confine: true }
+                });
+                pieApp.setOption({
+                    legend: { type: 'scroll', bottom: 0, left: 0, right: 0 },
+                    tooltip: { confine: true },
+                    series: [{
+                        radius: ['40%', '65%'], center: ['50%', '44%'],
+                        label: { show: false }, labelLine: { show: false }
+                    }]
+                });
+
+            } else {
+                charts.forEach(function(chart, index) { chart.setOption(desktop_options[index]); });
+                pieApp.setOption({ series: [desktop_pie] });
+            }
+            resize_charts();
+        }
+        dashboard_media.addEventListener('change', update_chart_layout);
+        window.addEventListener('resize', resize_charts);
+        if (window.ResizeObserver) {
+            var chart_observer = new ResizeObserver(resize_charts);
+            charts.forEach(function(chart) { chart_observer.observe(chart.getDom()); });
+        }
+        if (dashboard_media.matches)
+            update_chart_layout();
+    }
+
+    init_dashboard_chart_layout();
 
 //]]></script>

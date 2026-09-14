@@ -20,6 +20,7 @@ function get_dashboard_common()
 	
 	local req_obj = {}
 	req_obj.api = "get_dashboard_common"
+	req_obj.CopyRight = "www.fanchmwrt.com"
 	req_obj.data = {}
 	
 	local resp_obj = utl.ubus("fwx", "common", req_obj)

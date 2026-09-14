@@ -1,0 +1,269 @@
+<%+header%>
+<link rel="stylesheet" href="<%=resource%>/css/common.css">
+<script src="<%=resource%>/jquery-3.7.1.min.js"></script>
+<script src="<%=resource%>/echarts.min.js"></script>
+
+<style>
+    .traffic-stat-page {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 16px;
+        width: calc(100% - 16px);
+        margin: 0 auto 16px auto;
+    }
+    .traffic-stat-card {
+        border: 1px solid var(--border-color, #e5e7eb);
+        border-radius: 8px;
+        padding: 14px;
+        background: transparent;
+        box-sizing: border-box;
+        min-width: 0;
+    }
+    [data-darkmode="true"] .traffic-stat-card {
+        border-color: rgba(255, 255, 255, 0.16);
+    }
+    .traffic-stat-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 10px;
+    }
+    .traffic-stat-toolbar h3 {
+        margin: 0;
+        font-size: 16px;
+    }
+    .traffic-stat-chart {
+        width: 100%;
+        height: 400px;
+    }
+    .traffic-stat-status {
+        min-height: 18px;
+        margin: 0 0 8px;
+        font-size: 12px;
+        color: var(--text-color-low, #64748b);
+    }
+    @media (max-width: 767px) {
+        .traffic-stat-page {
+            width: calc(100% - 12px);
+            gap: 12px;
+        }
+        .traffic-stat-card {
+            padding: 10px 6px;
+        }
+        .traffic-stat-chart {
+            height: 360px;
+        }
+    }
+</style>
+
+<div class="traffic-stat-page">
+    <section class="traffic-stat-card">
+        <div class="traffic-stat-toolbar">
+            <h3><%:Today Traffic Statistics%></h3>
+            <button type="button" class="cbi-button" id="traffic-refresh"><%:Refresh%></button>
+        </div>
+        <p class="traffic-stat-status" id="today-traffic-status"></p>
+        <div id="today-traffic-chart" class="traffic-stat-chart"></div>
+    </section>
+    <section class="traffic-stat-card">
+        <div class="traffic-stat-toolbar">
+            <h3><%:History Traffic Statistics%></h3>
+        </div>
+        <p class="traffic-stat-status" id="history-traffic-status"></p>
+        <div id="history-traffic-chart" class="traffic-stat-chart"></div>
+    </section>
+</div>
+
+<script type="text/javascript">
+//<![CDATA[
+(function() {
+    var FWX_ECHART_RENDERER = "svg";
+    var todayChart = echarts.init(document.getElementById("today-traffic-chart"), null, { renderer: FWX_ECHART_RENDERER });
+    var historyChart = echarts.init(document.getElementById("history-traffic-chart"), null, { renderer: FWX_ECHART_RENDERER });
+    var todayData = null;
+    var historyData = null;
+
+    function cssVar(name, fallback) {
+        var value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+        return value || fallback;
+    }
+
+    function chartTheme() {
+        return {
+            text: getComputedStyle(document.body).color || "#333333",
+            axis: cssVar("--chart-axis-line-color", "rgba(0,0,0,0.2)"),
+            label: cssVar("--chart-axis-label-color", "#666666"),
+            split: cssVar("--chart-split-line-dashed-color", "rgba(0,0,0,0.15)"),
+            tooltipBg: cssVar("--chart-tooltip-bg", "rgba(255,255,255,0.95)"),
+            tooltipText: cssVar("--chart-tooltip-text", "#333333")
+        };
+    }
+
+    function formatTraffic(bytes) {
+        bytes = Number(bytes) || 0;
+        if (bytes < 1024) return bytes + " B";
+        if (bytes < 1024 * 1024) return Math.round(bytes / 1024) + " KB";
+        if (bytes < 1024 * 1024 * 1024) return Math.round(bytes / (1024 * 1024)) + " MB";
+        return (bytes / (1024 * 1024 * 1024)).toFixed(2) + " GB";
+    }
+
+    function trafficValue(value) {
+        value = Number(value) || 0;
+        return value > 0 ? value : 0;
+    }
+
+    function trafficUnit(maxBytes) {
+        return maxBytes >= 1024 * 1024 * 1024 ? {
+            name: "GB",
+            divisor: 1024 * 1024 * 1024
+        } : {
+            name: "MB",
+            divisor: 1024 * 1024
+        };
+    }
+
+    function renderTrafficChart(chart, labels, upBytes, downBytes, title) {
+        var theme = chartTheme();
+        var maxBytes = 0;
+        upBytes.forEach(function(v) { maxBytes = Math.max(maxBytes, trafficValue(v)); });
+        downBytes.forEach(function(v) { maxBytes = Math.max(maxBytes, trafficValue(v)); });
+        var unit = trafficUnit(maxBytes);
+        var upData = upBytes.map(function(v) { return +(trafficValue(v) / unit.divisor).toFixed(2); });
+        var downData = downBytes.map(function(v) { return +(trafficValue(v) / unit.divisor).toFixed(2); });
+
+        chart.setOption({
+            backgroundColor: "transparent",
+            animation: true,
+            title: {
+                text: title,
+                left: "center",
+                textStyle: { color: theme.text, fontSize: 16 }
+            },
+            tooltip: {
+                trigger: "axis",
+                backgroundColor: theme.tooltipBg,
+                textStyle: { color: theme.tooltipText },
+                axisPointer: { type: "shadow" },
+                formatter: function(params) {
+                    if (!params || !params.length) return "";
+                    var index = params[0].dataIndex;
+                    var result = params[0].axisValue + "<br/>";
+                    result += params[0].marker + "<%:Upstream Traffic%>: " + formatTraffic(upBytes[index]) + "<br/>";
+                    result += params[1].marker + "<%:Downstream Traffic%>: " + formatTraffic(downBytes[index]);
+                    return result;
+                }
+            },
+            legend: {
+                data: ["<%:Upstream Traffic%>", "<%:Downstream Traffic%>"],
+                bottom: 10,
+                left: "center",
+                textStyle: { color: theme.text }
+            },
+            grid: {
+                left: "1%",
+                right: "1%",
+                top: "12%",
+                bottom: "16%",
+                containLabel: true
+            },
+            xAxis: {
+                type: "category",
+                data: labels,
+                axisLabel: { color: theme.label, rotate: labels.length > 24 ? 45 : 0, interval: 0 },
+                axisLine: { lineStyle: { color: theme.axis } },
+                axisTick: { lineStyle: { color: theme.axis } }
+            },
+            yAxis: {
+                type: "value",
+                name: "<%:Traffic%>",
+                minInterval: 1,
+                nameTextStyle: { color: theme.label },
+                axisLabel: { color: theme.label, formatter: function(value) { return value + unit.name; } },
+                axisLine: { lineStyle: { color: theme.axis } },
+                axisTick: { lineStyle: { color: theme.axis } },
+                splitLine: { lineStyle: { color: theme.split, type: "dashed" } }
+            },
+            series: [{
+                name: "<%:Upstream Traffic%>",
+                type: "bar",
+                data: upData,
+                stack: "traffic",
+                barWidth: 20,
+                barMaxWidth: 30,
+                itemStyle: { color: "#5470c6" }
+            }, {
+                name: "<%:Downstream Traffic%>",
+                type: "bar",
+                data: downData,
+                stack: "traffic",
+                barWidth: 20,
+                barMaxWidth: 30,
+                itemStyle: { color: "#91cc75" }
+            }]
+        }, true);
+        chart.resize();
+    }
+
+    function renderToday(data) {
+        todayData = data;
+        var labels = [];
+        var up = [];
+        var down = [];
+        var map = {};
+        (data.hourly_traffic || []).forEach(function(item) {
+            if (!item) return;
+            map[Number(item.hour)] = item.traffic || {};
+        });
+        for (var hour = 0; hour < 24; hour++) {
+            labels.push(hour + ":00");
+            up.push(trafficValue((map[hour] || {}).up_bytes));
+            down.push(trafficValue((map[hour] || {}).down_bytes));
+        }
+        renderTrafficChart(todayChart, labels, up, down, "<%:Today Traffic Statistics%>");
+    }
+
+    function renderHistory(data) {
+        historyData = data;
+        var labels = [];
+        var up = [];
+        var down = [];
+        (data.list || []).forEach(function(item) {
+            labels.push((item.date_str || "").slice(5));
+            up.push(trafficValue(item.up_bytes));
+            down.push(trafficValue(item.down_bytes));
+        });
+        renderTrafficChart(historyChart, labels, up, down, "<%:History Traffic Statistics%>");
+    }
+
+    function loadTrafficStats() {
+        $("#today-traffic-status").text("<%:Loading...%>");
+        $("#history-traffic-status").text("<%:Loading...%>");
+        $.getJSON("<%=url('admin/traffic_stat_api/get_today_traffic')%>")
+            .done(function(data) {
+                $("#today-traffic-status").text("");
+                renderToday(data || {});
+            })
+            .fail(function() {
+                $("#today-traffic-status").text("<%:Load failed%>");
+            });
+        $.getJSON("<%=url('admin/traffic_stat_api/get_history_traffic')%>", { days: 30 })
+            .done(function(data) {
+                $("#history-traffic-status").text("");
+                renderHistory(data || {});
+            })
+            .fail(function() {
+                $("#history-traffic-status").text("<%:Load failed%>");
+            });
+    }
+
+    $("#traffic-refresh").on("click", loadTrafficStats);
+    window.addEventListener("resize", function() {
+        if (todayData) renderToday(todayData);
+        if (historyData) renderHistory(historyData);
+    });
+    loadTrafficStats();
+})();
+//]]>
+</script>
+<%+footer%>

@@ -215,6 +215,9 @@ msgstr "今日常用APP统计（24小时）"
 msgid "No app usage in this period"
 msgstr "该时段无APP使用记录"
 
+msgid "No traffic data in this period"
+msgstr "该时段暂无流量记录"
+
 msgid "Type"
 msgstr "类型"
 
@@ -449,3 +452,63 @@ msgstr "拉黑"
 
 msgid "Unblock"
 msgstr "解除"
+
+msgid "Historical Statistics"
+msgstr "历史数据统计"
+
+msgid "Last 30 days, including today"
+msgstr "最近30天（含今天）"
+
+msgid "Refresh"
+msgstr "刷新"
+
+msgid "Missing dates are left blank. App duration shows each day's Top 3; category durations may overlap."
+msgstr "无记录日期留空。应用时长展示每日最常用的3款应用；分类时长可能存在重叠。"
+
+msgid "Daily Traffic"
+msgstr "每日流量"
+
+msgid "Daily Internet and Online Duration"
+msgstr "每日上网与在线时长"
+
+msgid "Daily App Category Duration"
+msgstr "每日应用分类时长"
+
+msgid "Daily Top 3 App Duration"
+msgstr "每日最常用应用时长"
+
+msgid "Upload Traffic"
+msgstr "上行流量"
+
+msgid "Download Traffic"
+msgstr "下行流量"
+
+msgid "Internet Duration"
+msgstr "上网时长"
+
+msgid "Online Duration"
+msgstr "在线时长"
+
+msgid "Hours"
+msgstr "小时"
+
+msgid "Games"
+msgstr "游戏"
+
+msgid "Video"
+msgstr "视频"
+
+msgid "Chat"
+msgstr "聊天"
+
+msgid "Shopping"
+msgstr "购物"
+
+msgid "Music"
+msgstr "音乐"
+
+msgid "No data"
+msgstr "暂无数据"
+
+msgid "Failed to load history. Please retry."
+msgstr "历史数据加载失败，请重试。"

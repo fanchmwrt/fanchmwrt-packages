@@ -4,8 +4,8 @@ function index()
     local global_session_node
 
     entry({"admin", "fwx_monitor"}, firstchild(), _("System Monitor"), 12).dependent = true
-    entry({"admin", "fwx_monitor", "session_stat"}, alias("admin", "fwx_monitor", "session_stat", "global_session"), _("Session Statistics"), 51).dependent = true
-    global_session_node = entry({"admin", "fwx_monitor", "session_stat", "global_session"}, template("fwx_session_stat/session_stat"), _("Global Session Count"), 10)
+    entry({"admin", "fwx_monitor", "session_stat"}, firstchild(), _("Session Statistics"), 51).dependent = true
+    global_session_node = entry({"admin", "fwx_monitor", "session_stat", "global_session"}, template("fwx_session_stat/session_stat"), _("Global Session Count"), 20)
     global_session_node.leaf = true
     global_session_node.dependent = true
     entry({"admin", "fwx_monitor", "session_stat", "session_stat"}, alias("admin", "fwx_monitor", "session_stat", "global_session"), nil, 11).leaf = true

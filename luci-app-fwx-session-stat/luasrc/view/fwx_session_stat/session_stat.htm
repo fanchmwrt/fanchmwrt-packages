@@ -243,7 +243,7 @@
     }
 
     function rightAlignSeries(values, windowPoints) {
-        var out = new Array(windowPoints).fill(null);
+        var out = new Array(windowPoints).fill(0);
         var count = Math.min(values.length, windowPoints);
         var start = windowPoints - count;
         for (var i = 0; i < count; i++) {
@@ -359,4 +359,3 @@
 //]]>
 </script>
 <%+footer%>
-

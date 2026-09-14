@@ -8,8 +8,8 @@ msgstr "高级设置"
 msgid "Upgrade or manage the feature library here."
 msgstr "在此升级或管理特征库。"
 
-msgid "The feature library is used to describe app features, app filtering effect and number-dependent feature library"
-msgstr "特征库用于描述应用特征、过滤效果及依赖特征库的数量"
+msgid "The feature library is used to describe app features, and determines the effectiveness of app filtering and internet usage records"
+msgstr "特征库用于描述应用特征，决定应用过滤和上网记录的效果"
 
 msgid "Current version"
 msgstr "当前版本"
@@ -37,6 +37,9 @@ msgstr "特征库升级"
 
 msgid "Failed to update feature file, format error"
 msgstr "更新特征库失败，格式错误"
+
+msgid "Feature library format error. Please use the feature library for this version."
+msgstr "特征库格式错误，请使用对应版本的特征库"
 
 msgid "Failed to extract feature file, file not found"
 msgstr "更新特征库失败，未找到文件"
@@ -71,6 +74,344 @@ msgstr "上传失败"
 msgid "File too large"
 msgstr "文件过大"
 
+msgid "Basic Info"
+msgstr "基本信息"
 
-msgid "No copyright information detected, please download the latest feature library from the official website and upgrade."
-msgstr "未检测到版权信息，请通过官网下载最新特征库升级"
+msgid "Custom Applications"
+msgstr "自定义应用"
+
+msgid "Upload"
+msgstr "上传"
+
+msgid "Download the latest feature library from the OAF official website for upgrade. The required feature format is v4.0."
+msgstr "请前往OAF官网下载最新特征库进行升级，注意特征库格式为v4.0。"
+
+msgid "Add Application"
+msgstr "添加应用"
+
+msgid "Loading..."
+msgstr "正在加载..."
+
+msgid "No custom applications"
+msgstr "暂无自定义应用"
+
+msgid "Application Name"
+msgstr "应用名称"
+
+msgid "Category"
+msgstr "分类"
+
+msgid "Feature Count"
+msgstr "特征数量"
+
+msgid "Application Count"
+msgstr "应用个数"
+
+msgid "Actions"
+msgstr "操作"
+
+msgid "Close"
+msgstr "关闭"
+
+msgid "Application Features"
+msgstr "应用特征"
+
+msgid "Add Feature"
+msgstr "添加特征"
+
+msgid "Cancel"
+msgstr "取消"
+
+msgid "Confirm"
+msgstr "确认"
+
+msgid "Save"
+msgstr "保存"
+
+msgid "Load failed"
+msgstr "加载失败"
+
+msgid "Save failed"
+msgstr "保存失败"
+
+msgid "Saved successfully"
+msgstr "保存成功"
+
+msgid "No data"
+msgstr "暂无数据"
+
+msgid "No apps"
+msgstr "暂无应用"
+
+msgid "Unknown"
+msgstr "未知"
+
+msgid "Edit Application"
+msgstr "编辑应用"
+
+msgid "Feature"
+msgstr "特征"
+
+msgid "Position"
+msgstr "位置"
+
+msgid "Value"
+msgstr "值"
+
+msgid "Are you sure you want to delete this application?"
+msgstr "确定要删除这个应用吗？"
+
+msgid "Invalid application name"
+msgstr "应用名称无效"
+
+msgid "Please select a category"
+msgstr "请选择分类"
+
+msgid "Destination port must be between 1 and 65535"
+msgstr "目的端口必须在1到65535之间"
+
+msgid "Destination port must be a single port or port range between 1 and 65535"
+msgstr "目的端口必须是1到65535之间的单个端口或端口范围"
+
+msgid "Invalid domain"
+msgstr "域名无效"
+
+msgid "Invalid URI"
+msgstr "URI无效"
+
+msgid "Payload value must be two hexadecimal characters"
+msgstr "负载值必须是两位十六进制字符"
+
+msgid "Invalid payload match format"
+msgstr "负载匹配格式无效"
+
+msgid "Payload position must be a signed integer"
+msgstr "负载位置必须是有符号整数"
+
+msgid "At least one match field must be configured for each feature"
+msgstr "每个特征至少需要配置一个匹配字段"
+
+msgid "A maximum of 16 features is allowed"
+msgstr "最多允许16个特征"
+
+msgid "A maximum of 64 custom applications is allowed"
+msgstr "最多允许添加64个自定义应用"
+
+msgid "A maximum of 15 payload matches is allowed"
+msgstr "每个特征最多允许15个负载匹配项"
+
+msgid "Feature library submitted successfully"
+msgstr "特征库已提交给服务处理"
+
+msgid "Edit"
+msgstr "编辑"
+
+msgid "Delete"
+msgstr "删除"
+
+msgid "Features"
+msgstr "特征"
+
+msgid "Remove"
+msgstr "移除"
+
+msgid "Protocol"
+msgstr "协议"
+
+msgid "Select TCP or UDP."
+msgstr "选择TCP或UDP协议。"
+
+msgid "Destination Port"
+msgstr "目的端口"
+
+msgid "Supports a single destination port or port range, for example 80 or 80-443."
+msgstr "支持单个目的端口或端口范围，例如80或80-443。"
+
+msgid "Domain"
+msgstr "域名"
+
+msgid "The HTTP request URI. HTTPS does not support URI matching."
+msgstr "HTTP的请求URI，HTTPS不支持URI匹配。"
+
+msgid "Payload Match"
+msgstr "负载匹配"
+
+msgid "Leave blank for no restriction"
+msgstr "留空表示不限制"
+
+msgid "Matches hexadecimal Layer 7 payload content at specified positions. Format: pos:value,pos:value, for example 00:0a,02:ab. Position 0 is the first byte."
+msgstr "匹配七层协议内容中指定位置的十六进制值，格式为pos:value,pos:value，例如00:0a,02:ab，位置0表示第一个字节。"
+
+msgid "Add Payload"
+msgstr "添加负载匹配"
+
+msgid "Online Update"
+msgstr "在线更新"
+
+msgid "Online Feature Library Update"
+msgstr "在线特征库更新"
+
+msgid "Subscription Key"
+msgstr "订阅Key"
+
+msgid "Show"
+msgstr "显示"
+
+msgid "Hide"
+msgstr "隐藏"
+
+msgid "Update List"
+msgstr "更新列表"
+
+msgid "Device ID"
+msgstr "设备ID"
+
+msgid "Device Model"
+msgstr "设备型号"
+
+msgid "Click Update List to load available feature libraries"
+msgstr "点击更新列表加载可用特征库"
+
+msgid "File Name"
+msgstr "文件名称"
+
+msgid "Description"
+msgstr "说明"
+
+msgid "Release Date"
+msgstr "发布日期"
+
+msgid "Use This Version"
+msgstr "使用该版本"
+
+msgid "Switch"
+msgstr "切换"
+
+msgid "Use this feature library version now?"
+msgstr "确定立即使用该版本的特征库吗？"
+
+msgid "Feature library updated successfully"
+msgstr "特征库更新成功"
+
+msgid "Feature library update failed"
+msgstr "特征库更新失败"
+
+msgid "Feature library update timeout"
+msgstr "特征库更新超时"
+
+msgid "Invalid subscription key"
+msgstr "Key无效"
+
+msgid "A valid subscription is required"
+msgstr "Key没有权限"
+
+msgid "Too many requests. Please try again later."
+msgstr "访问过于频繁，请稍后再试"
+
+msgid "The subscription device limit has been reached"
+msgstr "订阅设备数超过限制"
+
+msgid "Subscription service is unavailable"
+msgstr "订阅服务暂不可用"
+
+msgid "The downloaded file is too large"
+msgstr "下载文件过大"
+
+msgid "Updated successfully"
+msgstr "更新成功"
+
+msgid "Switched successfully"
+msgstr "切换成功"
+
+msgid "List updated successfully"
+msgstr "列表更新成功"
+
+msgid "Application icons were skipped due to insufficient space"
+msgstr "存储空间不足，已跳过应用图标"
+
+msgid "Downloading"
+msgstr "正在下载"
+
+msgid "Extracting"
+msgstr "正在解压"
+
+msgid "Validating"
+msgstr "正在校验"
+
+msgid "Applying"
+msgstr "正在应用"
+
+msgid "Language"
+msgstr "语言"
+
+msgid "Chinese"
+msgstr "中文版"
+
+msgid "English"
+msgstr "英文版"
+
+msgid "Version"
+msgstr "版本"
+
+msgid "Lite"
+msgstr "Lite"
+
+msgid "Plus"
+msgstr "Plus"
+
+msgid "Current Version Number"
+msgstr "当前版本号"
+
+msgid "Current Version"
+msgstr "当前版本"
+
+msgid "Official Website"
+msgstr "官网"
+
+msgid "Visit"
+msgstr "访问"
+
+msgid "When the Key is empty, the free version can be used. After setting the Key, the premium version can be used. The premium version supports more applications, is updated regularly, and the latest supported application list can be viewed on the official website."
+msgstr "Key为空可以使用免费版本，设置Key后可以使用高级版本，高级版本支持的应用更多，定期更新，最新支持的应用列表可以在官网查看。"
+
+msgid "Click Update List to get the latest feature libraries"
+msgstr "点击更新列表可以获取最新的特征库"
+
+msgid "App Feature Library"
+msgstr "应用特征库"
+
+msgid "Type"
+msgstr "类型"
+
+msgid "Free Version"
+msgstr "免费版"
+
+msgid "Premium Version"
+msgstr "高级版"
+
+msgid "Feature Library Type"
+msgstr "特征库类型"
+
+msgid "Free"
+msgstr "免费版"
+
+msgid "Premium"
+msgstr "高级版"
+
+msgid "Updating list, please wait..."
+msgstr "正在更新列表，请稍候..."
+
+msgid "to obtain the advanced feature library update Key."
+msgstr "可获取高级特征库更新Key"
+
+msgid "Feature library checksum verification failed"
+msgstr "特征库文件校验失败"
+
+msgid "Please enter a valid Key. You can apply for a Key on the official website."
+msgstr "请输入正确的Key，Key可以通过官网申请"
+
+msgid "Enter the Key to use this feature library version"
+msgstr "输入Key后可以使用该版本特征库"
+
+msgid "Invalid Key. Please get the correct Key from the official website and enable the advanced feature library permission."
+msgstr "无效的Key，请通过官网获取正确的Key，并开通高级版特征库权限"

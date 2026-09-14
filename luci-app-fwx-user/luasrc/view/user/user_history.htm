@@ -1,0 +1,297 @@
+<div id="tab-history-statistics" class="tab-body">
+	<div class="user-history-toolbar">
+		<button type="button" class="cbi-button" onclick="load_user_history()"><%:Refresh%></button>
+	</div>
+	<p id="user_history_status" role="status" aria-live="polite" class="user-history-status"></p>
+	<div class="user-history-tabs" role="tablist" aria-label="<%:Historical Statistics%>">
+		<button type="button" role="tab" aria-selected="true" aria-controls="history_traffic_chart" onclick="select_history_chart('history_traffic_chart')"><%:Daily Traffic%></button>
+		<button type="button" role="tab" aria-selected="false" aria-controls="history_duration_chart" onclick="select_history_chart('history_duration_chart')"><%:Daily Internet and Online Duration%></button>
+		<button type="button" role="tab" aria-selected="false" aria-controls="history_category_chart" onclick="select_history_chart('history_category_chart')"><%:Daily App Category Duration%></button>
+		<button type="button" role="tab" aria-selected="false" aria-controls="history_apps_chart" onclick="select_history_chart('history_apps_chart')"><%:Daily Top 3 App Duration%></button>
+	</div>
+	<div class="user-history-grid">
+		<section class="user-history-card"><h4><%:Daily Traffic%></h4><div class="user-history-scroll"><div id="history_traffic_chart" class="user-history-chart"></div></div></section>
+		<section class="user-history-card"><h4><%:Daily Internet and Online Duration%></h4><div class="user-history-scroll"><div id="history_duration_chart" class="user-history-chart"></div></div></section>
+		<section class="user-history-card"><h4><%:Daily App Category Duration%></h4><div class="user-history-scroll"><div id="history_category_chart" class="user-history-chart"></div></div></section>
+		<section class="user-history-card"><h4><%:Daily Top 3 App Duration%></h4><div class="user-history-scroll"><div id="history_apps_chart" class="user-history-chart"></div></div></section>
+	</div>
+</div>
+<style>
+	.user-history-toolbar { display: flex; align-items: center; justify-content: flex-end; gap: 12px; margin-bottom: 12px; }
+	.user-history-status { display: none; }
+	.user-history-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+	.user-history-tabs { display: none; }
+	.user-history-card { min-width: 0; padding: 14px; border: 1px solid var(--border-color, #dce3eb); border-radius: 8px; }
+	.user-history-card h4 { margin: 0 0 12px; font-size: 14px; }
+	.user-history-scroll { overflow-x: auto; }
+	.user-history-chart { width: 100%; height: 360px; }
+	@media (max-width: 767px) {
+		.user-history-tabs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin: 12px 0; }
+		.user-history-tabs button { min-width: 0; padding: 10px 6px; border: 1px solid var(--border-color, #dce3eb); border-radius: 5px; background: transparent; color: inherit; font-size: 12px; cursor: pointer; }
+		.user-history-tabs button[aria-selected="true"] { background: #2869c7; border-color: #2869c7; color: #fff; }
+		.user-history-card { display: none; padding: 10px 6px; }
+		.user-history-card.history-selected { display: block; }
+		.user-history-scroll { overflow: visible; }
+	}
+</style>
+<script type="text/javascript">
+	var user_history_charts = {};
+	var user_history_loading = false;
+	var user_history_data = null;
+	var user_history_selected = 'history_traffic_chart';
+	var user_history_resize_timer = null;
+
+	function select_history_chart(id) {
+		user_history_selected = id;
+		document.querySelectorAll('.user-history-tabs button').forEach(function(button) {
+			button.setAttribute('aria-selected', button.getAttribute('aria-controls') === id ? 'true' : 'false');
+		});
+		document.querySelectorAll('.user-history-card').forEach(function(card) {
+			card.classList.toggle('history-selected', card.querySelector('.user-history-chart').id === id);
+		});
+		if (user_history_data) render_user_history(user_history_data);
+	}
+
+	function history_bar(name, list, getter, options) {
+		options = options || {};
+		var series = {
+			name: name,
+			type: 'bar',
+			stack: options.stack || null,
+			barMaxWidth: options.barMaxWidth || 24,
+			data: list.map(function(day) {
+				var value = day.available ? getter(day) : null;
+				if (value && typeof value === 'object') return value;
+				return value === null || value === undefined ? null : {value: value};
+			})
+		};
+		if (options.color) {
+			series.itemStyle = {color: options.color};
+		}
+		return series;
+	}
+
+	function history_value(value) {
+		var number = Number(value);
+		return Number.isFinite(number) && number > 0 ? number : 0;
+	}
+
+	function history_series_value(item) {
+		if (item && typeof item === 'object') return history_value(item.value);
+		return history_value(item);
+	}
+
+	function history_axis_value(value, unit) {
+		if (unit === '<%:Hours%>') return formatTimeDuration(Math.round(value * 3600));
+		if (value < 10) return value.toFixed(1) + ' ' + unit;
+		return Math.floor(value) + ' ' + unit;
+	}
+
+	function history_color(index) {
+		return typeof getAppColor === 'function' ? getAppColor(index) : [
+			'#5470c6', '#91cc75', '#fac858', '#ee6666',
+			'#73c0de', '#3ba272', '#fc8452', '#9a60b4',
+			'#ea7ccc', '#ff9f7f', '#ffdb5c', '#c23531'
+		][index % 12];
+	}
+
+	function history_tooltip_text_color(base_color) {
+		var match = (base_color || '').match(/\d+/g);
+		if (!match || match.length < 3) return '#111827';
+		var brightness = Number(match[0]) * 0.299 + Number(match[1]) * 0.587 + Number(match[2]) * 0.114;
+		return brightness > 140 ? '#111827' : '#f8fafc';
+	}
+
+	function history_tooltip_option(list, unit) {
+		var body_style = window.getComputedStyle(document.body);
+		var bg_color = body_style.backgroundColor || '#ffffff';
+		var text_color = history_tooltip_text_color(bg_color);
+		var border_color = text_color === '#111827' ? '#dce3eb' : 'rgba(255,255,255,0.12)';
+		var time_unit = unit === '<%:Hours%>';
+		return {
+			trigger: 'axis',
+			confine: true,
+			backgroundColor: text_color === '#111827' ? '#ffffff' : '#1f2937',
+			borderColor: border_color,
+			textStyle: {color: text_color},
+			axisPointer: {type: 'shadow'},
+			formatter: function(params) {
+				if (!params.length) return '';
+				var day = list[params[0].dataIndex];
+				var lines = [day.date];
+				if (!day.available) return lines.concat(['<%:No data%>']).join('<br/>');
+				params.forEach(function(item) {
+					if (!item.seriesName) return;
+					var data = item.data || {};
+					var value = data.tooltip_value !== undefined ? data.tooltip_value : item.value;
+					if (!Number(value)) return;
+					var display_value = Number(value).toFixed(2) + ' ' + unit;
+					if (time_unit && typeof formatTimeDuration === 'function') {
+						display_value = formatTimeDuration(Math.round(Number(value) * 3600));
+					}
+					lines.push(item.marker + (data.tooltip_name || item.seriesName) + ': ' + display_value);
+				});
+				return lines.join('<br/>');
+			}
+		};
+	}
+
+	function history_chart(id, list, series, unit) {
+		var element = document.getElementById(id);
+		var mobile = window.matchMedia('(max-width: 767px)').matches;
+		element.closest('.user-history-card').classList.toggle('history-selected', id === user_history_selected);
+		if (mobile && id !== user_history_selected) return;
+		var chart = user_history_charts[id];
+		if (!chart) chart = user_history_charts[id] = echarts.init(element, null, {renderer: FWX_ECHART_RENDERER});
+		var color = getComputedStyle(document.getElementById('tab-history-statistics')).color;
+		if (mobile) {
+			var active_indexes = [];
+			list.forEach(function(day, index) {
+				var has_value = day.available && series.some(function(item) {
+					return history_series_value(item.data[index]) > 0;
+				});
+				if (has_value) active_indexes.push(index);
+			});
+			list = active_indexes.map(function(index) { return list[index]; });
+			series = series.map(function(item) {
+				var copy = $.extend({}, item);
+				copy.data = active_indexes.map(function(index) { return item.data[index]; });
+				copy.barWidth = 6;
+				copy.barMaxWidth = 6;
+				return copy;
+			});
+			if (!list.length) {
+				element.style.height = '116px';
+				chart.resize();
+				chart.setOption({
+					animation: false,
+					legend: {show: false},
+					tooltip: {show: false},
+					xAxis: {show: false},
+					yAxis: {show: false},
+					graphic: {type: 'text', left: 'center', top: 46,
+						style: {text: '<%:No data%>', fill: color, opacity: 0.65, fontSize: 12}},
+					series: []
+				}, true);
+				return;
+			}
+			var totals = list.map(function(day, index) {
+				return series.reduce(function(total, item) {
+					return total + history_series_value(item.data[index]);
+				}, 0);
+			});
+			series.push({
+				name: '', type: 'bar', data: totals, barWidth: 6, barGap: '-100%', silent: true,
+				itemStyle: {color: 'transparent'},
+				label: {show: true, position: 'right', distance: 5, color: color, fontSize: 10,
+					formatter: function(params) { return history_axis_value(params.value, unit); }}
+			});
+		}
+		element.style.height = mobile ? Math.max(150, list.length * 19 + 72) + 'px' : '360px';
+		var date_axis = {type: 'category', data: list.map(function(day) {return day.date;}),
+			inverse: mobile, axisTick: {show: false},
+			axisLabel: {color: color, rotate: mobile ? 0 : 45, interval: 0,
+				formatter: function(date) {return date.slice(5);}},
+			splitLine: {show: mobile, lineStyle: {color: color, opacity: 0.08}}};
+		var value_axis = {type: 'value', name: unit, min: 0, position: mobile ? 'top' : 'left',
+			show: !mobile, axisLabel: {color: color}, splitLine: {lineStyle: {color: color, opacity: 0.1}}};
+		chart.resize();
+		chart.setOption({
+			animation: false,
+			textStyle: {color: color},
+			legend: {type: 'scroll', top: mobile ? 0 : 'auto', bottom: mobile ? 'auto' : 10,
+				orient: 'horizontal', left: 'center', textStyle: {color: color},
+				data: series.filter(function(item) { return item.name; }).map(function(item) { return item.name; })},
+			grid: {left: '1%', right: mobile ? 66 : '1%', top: mobile ? 42 : '8%', bottom: mobile ? 4 : '16%', containLabel: true},
+			tooltip: history_tooltip_option(list, unit),
+			xAxis: mobile ? value_axis : date_axis,
+			yAxis: mobile ? date_axis : value_axis,
+			series: series
+		}, true);
+	}
+
+	function render_user_history(list) {
+		user_history_data = list;
+		if (!document.getElementById('tab-history-statistics').classList.contains('active')) return;
+		var max_bytes = list.reduce(function(max, day) {
+			return Math.max(max, history_value(day.up_bytes), history_value(day.down_bytes));
+		}, 0);
+		var divisor = max_bytes >= 1073741824 ? 1073741824 : 1048576;
+		history_chart('history_traffic_chart', list, [
+			history_bar('<%:Upload Traffic%>', list, function(day) {return history_value(day.up_bytes) / divisor;}, {stack: 'traffic', color: '#5470c6'}),
+			history_bar('<%:Download Traffic%>', list, function(day) {return history_value(day.down_bytes) / divisor;}, {stack: 'traffic', color: '#91cc75'})
+		], divisor === 1073741824 ? 'GiB' : 'MiB');
+		history_chart('history_duration_chart', list, [
+			history_bar('<%:Internet Duration%>', list, function(day) {
+				return history_value(day.active_seconds) / 3600;
+			}, {stack: 'duration', color: history_color(0)}),
+			history_bar('<%:Online Duration%>', list, function(day) {
+				var active = history_value(day.active_seconds);
+				var online = history_value(day.online_seconds);
+				return {
+					value: Math.max(online - active, 0) / 3600,
+					tooltip_value: online / 3600
+				};
+			}, {stack: 'duration', color: history_color(1)})
+		], '<%:Hours%>');
+		var categories = [['game', '<%:Games%>'], ['video', '<%:Video%>'], ['chat', '<%:Chat%>'],
+			['shopping', '<%:Shopping%>'], ['music', '<%:Music%>']];
+		history_chart('history_category_chart', list, categories.map(function(category, index) {
+			return history_bar(category[1], list, function(day) {return history_value((day.category_seconds || {})[category[0]]) / 3600;}, {stack: 'category', color: history_color(index)});
+		}), '<%:Hours%>');
+		var app_series = {};
+		list.forEach(function(day, day_index) {
+			(day.top_apps || []).forEach(function(app) {
+				var appid = app.appid || app.name || '<%:Unknown App%>';
+				if (!app_series[appid]) {
+					app_series[appid] = {
+						name: app.name || ('<%:Unknown App%> ' + app.appid),
+						data: new Array(list.length).fill(null)
+					};
+				}
+				app_series[appid].data[day_index] = {value: history_value(app.seconds) / 3600};
+			});
+		});
+		var app_ids = Object.keys(app_series).sort(function(a, b) {
+			return app_series[a].name.localeCompare(app_series[b].name);
+		});
+		history_chart('history_apps_chart', list, app_ids.map(function(appid, index) {
+			return {
+				name: app_series[appid].name,
+				type: 'bar',
+				stack: 'apps',
+				barMaxWidth: 24,
+				data: app_series[appid].data,
+				itemStyle: {color: history_color(index)}
+			};
+		}), '<%:Hours%>');
+	}
+
+	function load_user_history() {
+		if (!mac || user_history_loading) return;
+		user_history_loading = true;
+		var status = document.getElementById('user_history_status');
+		status.textContent = '<%:Loading...%>';
+		$.ajax({
+			url: "<%=url('admin/fwx/get_user_daily_summary')%>", data: {mac: mac}, dataType: 'json', timeout: 15000
+		}).done(function(data) {
+			if (!data || !Array.isArray(data.list) || data.list.length !== 30) {
+				status.textContent = '<%:Failed to load history. Please retry.%>';
+				return;
+			}
+			status.textContent = '';
+			render_user_history(data.list);
+		}).fail(function() {
+			status.textContent = '<%:Failed to load history. Please retry.%>';
+		}).always(function() {user_history_loading = false;});
+	}
+
+	window.addEventListener('resize', function() {
+		if (!document.getElementById('tab-history-statistics').classList.contains('active')) return;
+		clearTimeout(user_history_resize_timer);
+		user_history_resize_timer = setTimeout(function() {
+			if (user_history_data) render_user_history(user_history_data);
+		}, 120);
+	});
+	select_history_chart(user_history_selected);
+</script>

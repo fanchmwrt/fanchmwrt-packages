@@ -26,6 +26,10 @@ function api_set_system_info()
     local json = require "luci.jsonc"
     local http = require "luci.http"
     local lan_ifname = http.formvalue("lan_ifname") or ""
+    local tcp_rst_num = tonumber(http.formvalue("tcp_rst")) or 1
+    if tcp_rst_num ~= 0 and tcp_rst_num ~= 1 then
+        tcp_rst_num = 1
+    end
     local theme_mode = http.formvalue("theme_mode")
     local theme_mode_num = 0 -- 默认值为0（light）
     if theme_mode then
@@ -39,6 +43,7 @@ function api_set_system_info()
     local body = {
         fwx = {
             lan_ifname = lan_ifname,
+            tcp_rst = tcp_rst_num,
             theme_mode = theme_mode_num
         }
     }

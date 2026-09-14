@@ -460,3 +460,11 @@ msgstr "最大只能添加16条规则"
 msgid "Are you sure you want to delete this rule?"
 msgstr "确定要删除这条规则吗？"
 
+msgid "Device Reboot"
+msgstr "设备重启"
+
+msgid "System Upgrade"
+msgstr "系统升级"
+
+msgid "Change Password"
+msgstr "修改密码"

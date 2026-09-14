@@ -62,6 +62,7 @@
 			$tableWrap.css('display', view_mode === 'card' ? 'none' : 'block');
 			$cardWrap.css('display', view_mode === 'card' ? 'flex' : 'none');
 			update_view_mode_buttons();
+			update_user_list_scrollbar_state();
 		}
 
 		function switch_view_mode(mode) {
@@ -155,7 +156,49 @@
 			});
 		}
 
+		function capture_user_list_scroll() {
+			return {
+				table: $('#user_table_wrapper').scrollLeft() || 0,
+				content: $('.user-status-content').scrollLeft() || 0,
+				main: $('#maincontent').scrollLeft() || 0,
+				window_x: window.pageXOffset || document.documentElement.scrollLeft || 0
+			};
+		}
+
+		function restore_user_list_scroll(state) {
+			if (!state || view_mode !== 'list') return;
+			$('#user_table_wrapper').scrollLeft(state.table);
+			$('.user-status-content').scrollLeft(state.content);
+			$('#maincontent').scrollLeft(state.main);
+			window.scrollTo(state.window_x, window.pageYOffset || document.documentElement.scrollTop || 0);
+		}
+
+		function schedule_restore_user_list_scroll(state) {
+			restore_user_list_scroll(state);
+			(window.requestAnimationFrame || window.setTimeout)(function() {
+				restore_user_list_scroll(state);
+				update_user_list_scrollbar_state();
+			});
+			setTimeout(function() {
+				restore_user_list_scroll(state);
+				update_user_list_scrollbar_state();
+			}, 80);
+			setTimeout(function() {
+				restore_user_list_scroll(state);
+				update_user_list_scrollbar_state();
+			}, 250);
+		}
+
+		function update_user_list_scrollbar_state() {
+			var main = document.getElementById('maincontent');
+			var wrap = document.getElementById('user_table_wrapper');
+			if (!main || !wrap || view_mode !== 'list') return;
+			var hasOverflow = main.scrollWidth > main.clientWidth + 1 || wrap.scrollWidth > wrap.clientWidth + 1;
+			main.classList.toggle('scrollbar_active', hasOverflow);
+		}
+
 		function getAllUsersData(page) {
+			var scrollState = capture_user_list_scroll();
 			new XHR().get("<%=url('admin/fwx/get_all_users')%>", {flag: 3, page: page, page_size: page_size},
 				function (x, data) {
 					user_list_data = data.data;
@@ -164,6 +207,7 @@
 					cur_page = data.data.page || 1;
 					render_user_list(user_list_data);
 					render_pagination();
+					schedule_restore_user_list_scroll(scrollState);
 				}
 			);
 		}
@@ -1324,6 +1368,10 @@
 		padding-top: 0;
 	}
 
+	.user-status-content {
+		overflow-x: visible !important;
+	}
+
     .tab-container {
         margin-top: 20px;
     }
@@ -1534,7 +1582,30 @@
 
 	.user-table-wrapper {
 		overflow-x: auto;
+		overflow-y: hidden;
 		-webkit-overflow-scrolling: touch;
+		padding-bottom: 8px;
+		scrollbar-width: auto;
+		scrollbar-color: var(--text-color-low, #94a3b8) transparent;
+	}
+
+	.user-table-wrapper::-webkit-scrollbar {
+		height: 10px;
+		display: block;
+	}
+
+	.user-table-wrapper::-webkit-scrollbar-track,
+	.user-table-wrapper::-webkit-scrollbar-corner {
+		background: transparent;
+	}
+
+	.user-table-wrapper::-webkit-scrollbar-thumb {
+		background: var(--text-color-low, #94a3b8);
+		border-radius: 8px;
+	}
+
+	.user-table-wrapper::-webkit-scrollbar-thumb:hover {
+		background: var(--text-color-medium, #64748b);
 	}
 
 	#user_status_table .th,

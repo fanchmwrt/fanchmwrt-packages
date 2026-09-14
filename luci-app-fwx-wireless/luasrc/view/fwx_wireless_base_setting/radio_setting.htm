@@ -1,0 +1,320 @@
+<%+header%>
+<link rel="stylesheet" href="<%=resource%>/css/common.css">
+<script src="<%=resource%>/jquery-3.7.1.min.js"></script>
+<script src="<%=resource%>/common.js"></script>
+
+<style>
+  #wireless-restart-modal { position: fixed; inset: 0; z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 20px; background: rgba(15, 23, 42, .45); }
+  #wireless-restart-modal .restart-dialog { width: 100%; max-width: 360px; padding: 28px 20px; border-radius: 10px; background: var(--background-color-high, #fff); color: var(--text-color-highest, #1e293b); text-align: center; box-sizing: border-box; }
+  #wireless-restart-modal .restart-spinner { width: 36px; height: 36px; margin: 0 auto 20px; border: 3px solid rgba(100, 116, 139, .25); border-top-color: #6383ef; border-radius: 50%; animation: wireless-restart-spin .8s linear infinite; }
+  #wireless-restart-modal .restart-countdown { margin-top: 12px; font-size: 14px; opacity: .75; }
+  @keyframes wireless-restart-spin { to { transform: rotate(360deg); } }
+  #wireless-radio-settings .radio-card { border: 1px solid var(--border-color-low, #e5e7eb); border-radius: 8px; padding: 16px; margin: 16px 0; }
+  #wireless-radio-settings .radio-card-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
+  #wireless-radio-settings .radio-card-meta { font-size: 12px; margin-bottom: 14px; opacity: .75; overflow-wrap: anywhere; }
+  #wireless-radio-settings .form-label { flex: 0 0 140px; }
+  #wireless-radio-settings .form-row > select { flex: 1; min-width: 0; width: 100%; max-width: 360px; box-sizing: border-box; }
+  #wireless-radio-settings .form-row > input:disabled,
+  #wireless-radio-settings .form-row > select:disabled { opacity: .8; }
+  #wireless-radio-settings .wireless-actions { justify-content: flex-end; flex-wrap: wrap; }
+  #wireless-radio-settings .status-tip { overflow-wrap: anywhere; }
+  @media (max-width: 768px) {
+    #wireless-radio-settings .radio-card { padding: 12px; }
+    #wireless-radio-settings .radio-card .form-row { flex-direction: column; align-items: stretch; gap: 6px; }
+    #wireless-radio-settings .radio-card .form-label { flex: auto; width: auto; }
+    #wireless-radio-settings .radio-card .form-row > select { max-width: none; }
+  }
+</style>
+
+<div class="fwx-form-card" id="wireless-radio-settings">
+  <div class="form-title"><%:Wireless Radio%></div>
+  <div class="form-desc"><%:Configure wireless radio parameters%></div>
+  <div id="radio-card-list"></div>
+  <div class="form-row wireless-actions">
+    <button type="button" class="btn btn-secondary" id="wireless-refresh"><%:Refresh%></button>
+    <button type="button" class="btn" id="wireless-save" disabled><%:Save & Apply%></button>
+  </div>
+  <div class="status-tip" id="wireless-tip" role="status" aria-live="polite"></div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var api_get = '<%=url("admin/fwx_wireless/get_radio_info")%>';
+  var api_set = '<%=url("admin/fwx_wireless/set_radio_info")%>';
+  var csrf_token = '<%=token%>';
+  var radio_list = [];
+  var busy = false;
+  var text = {
+    loading: '<%:Loading...%>',
+    load_failed: '<%:Load failed%>',
+    save_failed: '<%:Save failed. Refresh the page and check the wireless configuration.%>',
+    no_radio: '<%:No wireless radio found%>',
+    channel: '<%:Channel%>',
+    country: '<%:Country Code%>',
+    bandwidth: '<%:Bandwidth%>',
+    radio_mode: '<%:Wireless Mode%>',
+    legacy: '<%:Legacy%>',
+    country_default: '<%:Default Region%>',
+    device: '<%:Device%>',
+    enable: '<%:Enable%>',
+    enabled: '<%:Enabled%>',
+    disabled: '<%:Disabled%>',
+    auto: '<%:Automatic%>',
+    unavailable: '<%:Not supported by this firmware or band%>',
+    no_changes: '<%:No changes to save%>',
+    confirm: '<%:Applying wireless settings will disconnect wireless clients. Continue?%>',
+    restarting: '<%:Wireless is restarting, please wait.%>',
+    countdown: '<%:Countdown%>',
+    seconds: '<%:seconds%>',
+    uncertain: '<%:The connection was interrupted. Settings may have been applied. Reconnect and refresh to confirm.%>',
+    discard: '<%:Discard unsaved changes and reload?%>'
+  };
+
+  function show_tip(message) {
+    $('#wireless-tip').text(message || '');
+  }
+
+  function show_restart_modal(on_done) {
+    var deadline = Date.now() + 30000;
+    var modal = $('<div id="wireless-restart-modal">').appendTo('body');
+    var dialog = $('<div class="restart-dialog" role="dialog" aria-modal="true" tabindex="-1">')
+      .attr('aria-labelledby', 'wireless-restart-title').appendTo(modal);
+    $('<div class="restart-spinner" aria-hidden="true">').appendTo(dialog);
+    $('<div id="wireless-restart-title">').text(text.restarting).appendTo(dialog);
+    var countdown = $('<div class="restart-countdown" role="timer">').appendTo(dialog);
+    countdown.text(text.countdown + ': 30 ' + text.seconds);
+    dialog.on('keydown', function (event) {
+      if (event.key === 'Tab' || event.key === 'Escape') event.preventDefault();
+    });
+    dialog[0].focus();
+    var timer = setInterval(function () {
+      var left = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+      countdown.text(text.countdown + ': ' + left + ' ' + text.seconds);
+      if (left === 0) {
+        clearInterval(timer);
+        modal.remove();
+        on_done();
+        $('#wireless-refresh').trigger('focus');
+      }
+    }, 250);
+  }
+
+  function set_busy(value) {
+    busy = value;
+    $('#wireless-refresh').prop('disabled', value);
+    $('#wireless-save').prop('disabled', value || !radio_list.length);
+    radio_list.forEach(function (item) {
+      item.card.find('input, select').prop('disabled', value);
+    });
+  }
+
+  function dynamic_choices(list) {
+    if (!Array.isArray(list)) return [];
+    return list.map(function (choice) {
+      if (Array.isArray(choice)) return choice;
+      return [
+        String(choice && choice.value != null ? choice.value : ''),
+        String(choice && choice.label != null ? choice.label : (choice && choice.value != null ? choice.value : '')),
+        choice && choice.available === false
+      ];
+    });
+  }
+
+  function channel_options(item) {
+    var channels = dynamic_choices(item.channel_list).map(function (choice) {
+      if (choice[0] === 'auto') choice[1] = text.auto;
+      return choice;
+    });
+    if (!channels.length) channels.push([item.channel || 'auto', item.channel === 'auto' || !item.channel ? text.auto : item.channel]);
+    return channels;
+  }
+
+  function country_options(item) {
+    var current = String(item.country || '').toUpperCase();
+    var countries = dynamic_choices(item.country_list);
+    countries.forEach(function (choice) {
+      if (choice[0] === '') choice[1] = text.country_default;
+    });
+    if (!countries.length) countries.push(['', text.country_default]);
+    if (current && !countries.some(function (choice) { return choice[0] === current; })) countries.push([current, current]);
+    return countries;
+  }
+
+  function htmode_family(value) {
+    value = String(value || '');
+    if (value.indexOf('EHT') === 0) return 'be';
+    if (value.indexOf('HE') === 0) return 'ax';
+    if (value.indexOf('VHT') === 0) return 'ac';
+    if (value.indexOf('HT') === 0) return 'n';
+    return 'legacy';
+  }
+
+  function luci_visible_htmode(value) {
+    return ['', 'HT20', 'HT40', 'VHT20', 'VHT40', 'VHT80', 'VHT160',
+      'HE20', 'HE40', 'HE80', 'HE160', 'EHT20', 'EHT40', 'EHT80',
+      'EHT160', 'EHT320'].indexOf(String(value || '')) !== -1;
+  }
+
+  function current_hwmode(item) {
+    return item.hwmode || htmode_family(item.htmode);
+  }
+
+  function hwmode_options(item) {
+    var list = Array.isArray(item.hwmode_list) ? item.hwmode_list : [];
+    var has = function (value) { return list.indexOf(value) !== -1; };
+    var choices = [];
+    if (has('a') || has('b') || has('g')) choices.push(['legacy', text.legacy]);
+    if (has('n')) choices.push(['n', 'N']);
+    if (has('ac')) choices.push(['ac', 'AC']);
+    if (has('ax')) choices.push(['ax', 'AX']);
+    if (has('be')) choices.push(['be', 'BE']);
+    if (!choices.length) choices.push([current_hwmode(item), current_hwmode(item) || text.legacy]);
+    if (!choices.some(function (choice) { return choice[0] === current_hwmode(item); })) choices.push([current_hwmode(item), current_hwmode(item)]);
+    return choices;
+  }
+
+  function htmode_options(item, mode) {
+    var modes = dynamic_choices(item.htmode_list).filter(function (choice) {
+      if (!luci_visible_htmode(choice[0])) return false;
+      if (!choice[0]) return true;
+      return htmode_family(choice[0]) === mode;
+    }).map(function (choice) {
+      if (choice[0] === '') choice[1] = text.auto;
+      return choice;
+    });
+    if (!modes.length) modes.push([item.htmode || '', item.htmode || text.auto]);
+    return modes;
+  }
+
+  function fill_select(select, choices, selected) {
+    select.empty();
+    choices.forEach(function (choice) {
+      $('<option>').val(choice[0]).text(choice[1] + (choice[2] ? ' — ' + text.unavailable : ''))
+        .prop('disabled', !!choice[2]).appendTo(select);
+    });
+    if (!choices.some(function (choice) { return choice[0] === selected; })) {
+      $('<option>').val(selected).text(selected).appendTo(select);
+    }
+    select.val(selected);
+  }
+
+  function add_field(card, index, name, label, input) {
+    var id = 'wireless-radio-' + name + '-' + index;
+    var row = $('<div class="form-row">').attr('data-field', name);
+    $('<label class="form-label">').attr('for', id).text(label).appendTo(row);
+    input.attr('id', id).attr('data-input', name).appendTo(row);
+    row.appendTo(card);
+    return input;
+  }
+
+  function add_switch(card, index, name, label, checked) {
+    var id = 'wireless-radio-' + name + '-' + index;
+    var row = $('<div class="form-row">').appendTo(card);
+    $('<label class="form-label">').attr('for', id).text(label).appendTo(row);
+    var toggle = $('<label class="switch">').appendTo(row);
+    $('<input type="checkbox">').attr('id', id).attr('data-input', name).prop('checked', Number(checked) === 1).appendTo(toggle);
+    $('<span class="slider">').appendTo(toggle);
+  }
+
+  function field(item, name) {
+    return item.card.find('[data-input="' + name + '"]');
+  }
+
+  function update_htmode(item, keep_value) {
+    var select = field(item, 'htmode');
+    var previous = keep_value ? (select.val() || item.htmode || '') : '';
+    var previous_label = select.find('option:selected').text();
+    var choices = htmode_options(item, field(item, 'hwmode').val() || current_hwmode(item));
+    var selected = previous && choices.some(function (choice) { return choice[0] === previous; }) ? previous : '';
+    if (!selected && previous_label) {
+      var same_width = choices.filter(function (choice) { return choice[1] === previous_label && choice[0]; })[0];
+      if (same_width) selected = same_width[0];
+    }
+    if (!selected && choices.length > 1) selected = choices[1][0];
+    fill_select(select, choices, selected);
+  }
+
+  function render_radio(item, index) {
+    var card = item.card = $('<div class="radio-card">').appendTo('#radio-card-list');
+    $('<div class="radio-card-title">').text(item.band && item.band !== 'Unknown' ? item.band : item.radio).appendTo(card);
+    $('<div class="radio-card-meta">').text(text.device + ': ' + item.radio + ' · ' +
+      (Number(item.disabled) ? text.disabled : text.enabled)).appendTo(card);
+    add_switch(card, index, 'enabled', text.enable, !Number(item.disabled));
+    add_field(card, index, 'hwmode', text.radio_mode, $('<select>'));
+    fill_select(field(item, 'hwmode'), hwmode_options(item), current_hwmode(item));
+    add_field(card, index, 'channel', text.channel, $('<select>'));
+    fill_select(field(item, 'channel'), channel_options(item), item.channel || 'auto');
+    add_field(card, index, 'country', text.country, $('<select>'));
+    fill_select(field(item, 'country'), country_options(item), String(item.country || '').toUpperCase());
+    add_field(card, index, 'htmode', text.bandwidth, $('<select>'));
+    update_htmode(item, true);
+    field(item, 'hwmode').on('change', function () { update_htmode(item, false); });
+    item.original = JSON.stringify(collect_item(item));
+  }
+
+  function collect_item(item) {
+    return {
+      radio: item.radio,
+      hwmode: field(item, 'hwmode').val() || '',
+      channel: field(item, 'channel').val() || 'auto',
+      country: field(item, 'country').val() || '',
+      htmode: field(item, 'htmode').val() || '',
+      disabled: field(item, 'enabled').is(':checked') ? 0 : 1
+    };
+  }
+
+  function changed_items() {
+    return radio_list.filter(function (item) {
+      return item.original !== JSON.stringify(collect_item(item));
+    }).map(collect_item);
+  }
+
+  function refresh(force) {
+    if (busy) return;
+    if (force !== true && changed_items().length && !window.confirm(text.discard)) return;
+    set_busy(true);
+    show_tip(text.loading);
+    $.ajax({ url: api_get, dataType: 'json', cache: false, timeout: 15000 }).done(function (resp) {
+      if (!resp || (resp.code !== 0 && resp.code !== 2000) || !resp.data || !Array.isArray(resp.data.radio_list)) {
+        show_tip(text.load_failed);
+        return;
+      }
+      radio_list = resp.data.radio_list;
+      $('#radio-card-list').empty();
+      radio_list.forEach(render_radio);
+      show_tip(radio_list.length ? '' : text.no_radio);
+    }).fail(function () {
+      show_tip(text.load_failed);
+    }).always(function () { set_busy(false); });
+  }
+
+  function save() {
+    if (busy) return;
+    var items = changed_items();
+    if (!items.length) { show_tip(text.no_changes); return; }
+    if (!window.confirm(text.confirm)) return;
+    set_busy(true);
+    show_tip('');
+    var request_error = '';
+    show_restart_modal(function () {
+      set_busy(false);
+      if (request_error) show_tip(request_error);
+      else refresh(true);
+    });
+    $.ajax({
+      url: api_set, method: 'POST', dataType: 'json', timeout: 20000,
+      data: { token: csrf_token, data: JSON.stringify({ radio_list: items }) }
+    }).done(function (resp) {
+      if (!resp || (resp.code !== 0 && resp.code !== 2000)) request_error = text.save_failed;
+    }).fail(function (xhr) {
+      request_error = xhr.status === 0 ? text.uncertain : text.save_failed;
+    });
+  }
+
+  $('#wireless-refresh').on('click', refresh);
+  $('#wireless-save').on('click', save);
+  $(refresh);
+})();
+</script>
+<%+footer%>

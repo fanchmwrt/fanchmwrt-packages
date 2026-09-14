@@ -14,6 +14,12 @@ msgstr "用于终端探测的LAN接口名称，系统默认为桥接接口(br-la
 msgid "Invalid LAN interface name"
 msgstr "无效的LAN接口名称"
 
+msgid "TCP Connection Reset"
+msgstr "TCP连接重置"
+
+msgid "Send TCP reset packets when a TCP connection is filtered."
+msgstr "TCP连接被过滤时发送重置报文。"
+
 msgid "Refresh"
 msgstr "刷新"
 
