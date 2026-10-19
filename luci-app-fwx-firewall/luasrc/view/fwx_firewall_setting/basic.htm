@@ -1,0 +1,96 @@
+<%+header%>
+<link rel="stylesheet" href="<%=resource%>/css/common.css">
+<script src="<%=resource%>/jquery-3.7.1.min.js"></script>
+<script src="<%=resource%>/common.js"></script>
+
+<div class="fwx-form-card">
+  <div class="form-title"><%:Firewall Settings%></div>
+  <div class="form-desc"><%:Basic Settings%></div>
+
+  <div class="form-row">
+    <label class="form-label"><%:FullCone NAT%></label>
+    <label class="switch">
+      <input type="checkbox" id="fullcone">
+      <span class="slider"></span>
+    </label>
+  </div>
+
+  <div class="form-row" style="justify-content:flex-end; gap:8px;">
+    <button class="btn btn-secondary" id="fw-refresh"><%:Refresh%></button>
+    <button class="btn" id="fw-save"><%:Save%></button>
+  </div>
+  <div class="status-tip" id="fw-tip"></div>
+</div>
+
+<script>
+(function(){
+  var _SavedSuccessfully = '<%:Saved successfully%>';
+  var _SaveFailed = '<%:Save failed%>';
+  var _Loading = '<%:Loading...%>';
+  var _LoadFailed = '<%:Load failed%>';
+
+  var apiGetFirewall = '<%=url("admin/fwx_network/firewall/get_firewall")%>';
+  var apiSetFirewall = '<%=url("admin/fwx_network/firewall/set_firewall")%>';
+
+  function showModal(msg, ok) {
+    if (ok) {
+      showCommonModal(msg, 2000, 'success');
+    } else {
+      showCommonModal(msg, 2000, 'error');
+    }
+  }
+
+  function isSuccess(resp) {
+    return resp && (resp.code === 0 || resp.code === 2000);
+  }
+
+  function refresh() {
+    $('#fw-tip').text(_Loading);
+    $.getJSON(apiGetFirewall).done(function(resp) {
+      if (isSuccess(resp)) {
+        var basic = (resp.data && resp.data.basic) || {};
+        $('#fullcone').prop('checked', basic.fullcone == 1);
+        $('#fw-tip').text('');
+      } else {
+        $('#fw-tip').text(_LoadFailed);
+      }
+    }).fail(function() {
+      $('#fw-tip').text(_LoadFailed);
+    });
+  }
+
+  function save() {
+    var payload = {
+      fullcone: $('#fullcone').prop('checked') ? 1 : 0
+    };
+
+    $('#fw-save').prop('disabled', true);
+    $.ajax({
+      url: apiSetFirewall,
+      method: 'POST',
+      dataType: 'json',
+      data: {
+        data: JSON.stringify({
+          action: 'set_basic',
+          basic: payload
+        })
+      }
+    }).done(function(resp) {
+      if (isSuccess(resp)) {
+        showModal(_SavedSuccessfully, true);
+      } else {
+        showModal((resp && resp.msg) || _SaveFailed, false);
+      }
+    }).fail(function() {
+      showModal(_SaveFailed, false);
+    }).always(function() {
+      $('#fw-save').prop('disabled', false);
+    });
+  }
+
+  $('#fw-refresh').on('click', refresh);
+  $('#fw-save').on('click', save);
+  $(refresh);
+})();
+</script>
+<%+footer%>

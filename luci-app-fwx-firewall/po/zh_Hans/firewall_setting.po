@@ -1,0 +1,29 @@
+msgid "Firewall"
+msgstr "防火墙"
+
+msgid "Firewall Settings"
+msgstr "防火墙设置"
+
+msgid "Basic Settings"
+msgstr "基本设置"
+
+msgid "FullCone NAT"
+msgstr "FullCone NAT"
+
+msgid "Refresh"
+msgstr "刷新"
+
+msgid "Save"
+msgstr "保存"
+
+msgid "Saved successfully"
+msgstr "保存成功"
+
+msgid "Save failed"
+msgstr "保存失败"
+
+msgid "Loading..."
+msgstr "加载中..."
+
+msgid "Load failed"
+msgstr "加载失败"
