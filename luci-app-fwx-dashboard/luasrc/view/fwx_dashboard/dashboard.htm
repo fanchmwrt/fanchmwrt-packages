@@ -1360,7 +1360,7 @@
                     <span class="stat-label"><%:Internet Status%></span>
                     <span class="stat-icon icon-sphere" aria-hidden="true"></span>
                 </div>
-                <div id="internet-status" class="top-stat-value"></div>
+                <div id="internet-status" class="top-stat-value"><%:Checking...%></div>
             </a>
             <a class="mini" href="<%=url('admin/fwx_internet_record/base_setting')%>">
                 <div class="stat-head">
@@ -1573,6 +1573,7 @@
     var _InternetStatus = '<%:Internet Status%>';
     var _Connected = '<%:Connected%>';
     var _Disconnected = '<%:Disconnected%>';
+    var _Checking = '<%:Checking...%>';
     var _NoCable = '<%:No Cable%>';
     var _DialFailed = '<%:Dial Failed%>';
     var _Unknown = '<%:Unknown%>';
@@ -2290,7 +2291,7 @@
         updateNetworkInfo(networkData);
         renderPortStatus(net.port_status || []);
         
-        if(net.internet !== undefined) {
+        if(net.internet !== undefined || net.internet_check_status !== undefined) {
             var $internetStatusEl = $('#internet-status');
             if($internetStatusEl.length) {
                 var statusText = '';
@@ -2315,6 +2316,10 @@
                     default:
                         statusText = _Unknown;
                         statusColor = '#6b7280'; 
+                }
+                if(String(net.internet_check_status) === '0') {
+                    statusText = _Checking;
+                    statusColor = '#f59e0b';
                 }
                 $internetStatusEl.text(statusText).attr('title', statusText).css('color', statusColor);
             }

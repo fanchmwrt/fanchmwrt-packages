@@ -31,6 +31,8 @@ function api_set_system_info()
         tcp_rst_num = 1
     end
     local theme_mode = http.formvalue("theme_mode")
+    local internet_check_domain = http.formvalue("internet_check_domain")
+    local internet_check_interval = http.formvalue("internet_check_interval")
     local theme_mode_num = 0 -- 默认值为0（light）
     if theme_mode then
         theme_mode_num = tonumber(theme_mode) or 0
@@ -44,7 +46,9 @@ function api_set_system_info()
         fwx = {
             lan_ifname = lan_ifname,
             tcp_rst = tcp_rst_num,
-            theme_mode = theme_mode_num
+            theme_mode = theme_mode_num,
+            internet_check_domain = internet_check_domain,
+            internet_check_interval = internet_check_interval
         }
     }
     local resp = ubus_call("set_system_info", { data = body })

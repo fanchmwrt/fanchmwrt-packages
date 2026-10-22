@@ -49,3 +49,21 @@ msgstr "暗色"
 
 msgid "Set fanchmwrt theme mode"
 msgstr "设置fanchmwrt主题的模式"
+
+msgid "Internet Check Domain"
+msgstr "联网检测域名"
+
+msgid "Domain used for internet connectivity checks. Leave empty to use www.bing.com."
+msgstr "用于联网检测的域名。留空时使用 www.bing.com。"
+
+msgid "Invalid internet check domain"
+msgstr "联网检测域名无效"
+
+msgid "Internet Check Interval"
+msgstr "联网检测间隔"
+
+msgid "seconds"
+msgstr "秒"
+
+msgid "Connectivity checks pause after 10 minutes without API requests and resume when activity returns."
+msgstr "连续10分钟没有API请求时暂停联网检测，恢复活跃后继续检测。"

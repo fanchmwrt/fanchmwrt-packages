@@ -10,6 +10,9 @@ msgstr "已联网"
 msgid "Disconnected"
 msgstr "未联网"
 
+msgid "Checking..."
+msgstr "正在检测"
+
 msgid "No Cable"
 msgstr "未插网线"
 

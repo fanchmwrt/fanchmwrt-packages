@@ -45,6 +45,41 @@
     <span><%:Set fanchmwrt theme mode%></span>
   </div>
 
+  <div class="form-row">
+    <label class="form-label" for="internet-check-domain"><%:Internet Check Domain%></label>
+    <div style="flex: 1;">
+      <input id="internet-check-domain" type="text" maxlength="253" placeholder="www.bing.com" class="input-short">
+      <div class="error-msg" id="internet-check-domain-error" style="display:none; color:#f87171; font-size:12px; margin-top:4px;"></div>
+    </div>
+  </div>
+
+  <div class="form-desc" style="margin-top: -10px; margin-bottom: 20px;">
+    <span><%:Domain used for internet connectivity checks. Leave empty to use www.bing.com.%></span>
+  </div>
+
+  <div class="form-row">
+    <label class="form-label" for="internet-check-interval"><%:Internet Check Interval%></label>
+    <div style="flex: 1;">
+      <select id="internet-check-interval" class="input-short">
+        <option value="1">1 <%:seconds%></option>
+        <option value="2">2 <%:seconds%></option>
+        <option value="3">3 <%:seconds%></option>
+        <option value="4">4 <%:seconds%></option>
+        <option value="5">5 <%:seconds%></option>
+        <option value="10">10 <%:seconds%></option>
+        <option value="20">20 <%:seconds%></option>
+        <option value="30">30 <%:seconds%></option>
+        <option value="60">60 <%:seconds%></option>
+        <option value="120">120 <%:seconds%></option>
+        <option value="300">300 <%:seconds%></option>
+      </select>
+    </div>
+  </div>
+
+  <div class="form-desc" style="margin-top: -10px; margin-bottom: 20px;">
+    <span><%:Connectivity checks pause after 10 minutes without API requests and resume when activity returns.%></span>
+  </div>
+
   <div class="form-row" style="justify-content:flex-end; gap:8px;">
     <button class="btn btn-secondary" id="system-refresh"><%:Refresh%></button>
     <button class="btn" id="system-save"><%:Save%></button>
@@ -59,6 +94,7 @@
   var _Loading = '<%:Loading...%>';
   var _LoadFailed = '<%:Load failed%>';
   var _InvalidLANInterface = '<%:Invalid LAN interface name%>';
+  var _InvalidInternetCheckDomain = '<%:Invalid internet check domain%>';
   
   const apiGet = '<%=url("admin/fwx/get_system_info")%>';
   const apiSet = '<%=url("admin/fwx/set_system_info")%>';
@@ -79,6 +115,14 @@
     return regex.test(lanIfname);
   }
 
+  function validateInternetCheckDomain(domain) {
+    if (!domain || domain.length > 253) return false;
+    return domain.split('.').every(function(label) {
+      return label.length >= 1 && label.length <= 63 &&
+        /^[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?$/.test(label);
+    });
+  }
+
   function showError(fieldId, errorMsg) {
     $('#' + fieldId + '-error').text(errorMsg).show();
     $('#' + fieldId).css('border-color', '#f87171');
@@ -97,9 +141,13 @@
       const lanIfname = fwx.lan_ifname || 'br-lan';
       const tcpRst = fwx.tcp_rst !== undefined ? Number(fwx.tcp_rst) : 1;
       const themeMode = fwx.theme_mode !== undefined ? fwx.theme_mode : 0;
+      const internetCheckDomain = fwx.internet_check_domain || 'www.bing.com';
+      const internetCheckInterval = fwx.internet_check_interval || 5;
       $('#lan-ifname').val(lanIfname);
       $('#tcp-rst').prop('checked', tcpRst === 1);
       $('#theme-mode').val(themeMode.toString());
+      $('#internet-check-domain').val(internetCheckDomain);
+      $('#internet-check-interval').val(String(internetCheckInterval));
       $('#system-tip').text('');
     }).fail(function(){
       $('#system-tip').text(_LoadFailed);
@@ -110,6 +158,8 @@
     const lanIfname = $('#lan-ifname').val().trim();
     const tcpRst = $('#tcp-rst').is(':checked') ? 1 : 0;
     const themeMode = $('#theme-mode').val();
+    const internetCheckDomain = $('#internet-check-domain').val().trim() || 'www.bing.com';
+    const internetCheckInterval = $('#internet-check-interval').val();
     
     if (!validateLanIfname(lanIfname)) {
       showError('lan-ifname', _InvalidLANInterface);
@@ -117,11 +167,18 @@
     }
     
     clearError('lan-ifname');
+    if (!validateInternetCheckDomain(internetCheckDomain)) {
+      showError('internet-check-domain', _InvalidInternetCheckDomain);
+      return;
+    }
+    clearError('internet-check-domain');
     
     const payload = { 
       lan_ifname: lanIfname,
       tcp_rst: tcpRst,
-      theme_mode: themeMode
+      theme_mode: themeMode,
+      internet_check_domain: internetCheckDomain,
+      internet_check_interval: internetCheckInterval
     };
     $('#system-save').prop('disabled', true);
     $.ajax({
@@ -151,6 +208,15 @@
       showError('lan-ifname', _InvalidLANInterface);
     } else {
       clearError('lan-ifname');
+    }
+  });
+
+  $('#internet-check-domain').on('blur', function() {
+    const value = $(this).val().trim();
+    if (value && !validateInternetCheckDomain(value)) {
+      showError('internet-check-domain', _InvalidInternetCheckDomain);
+    } else {
+      clearError('internet-check-domain');
     }
   });
 
