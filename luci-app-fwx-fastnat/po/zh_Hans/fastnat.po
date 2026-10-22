@@ -1,0 +1,92 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: zh_Hans\n"
+
+msgid "Network Setting"
+msgstr "网络设置"
+
+msgid "Fastnat"
+msgstr "网络加速"
+
+msgid "Acceleration Engine"
+msgstr "加速引擎"
+
+msgid "Engine Status"
+msgstr "引擎状态"
+
+msgid "Loading..."
+msgstr "加载中..."
+
+msgid "Traffic Statistics"
+msgstr "流量统计"
+
+msgid "Total Packets"
+msgstr "总数据包数"
+
+msgid "Currently Accelerated Connections"
+msgstr "正在加速连接"
+
+msgid "Accelerated Packets"
+msgstr "加速数据包数"
+
+msgid "Running"
+msgstr "运行中"
+
+msgid "Disabled"
+msgstr "已关闭"
+
+msgid "Acceleration module is not loaded"
+msgstr "加速模块未加载"
+
+msgid "Failed to load status"
+msgstr "获取状态失败"
+
+msgid "Failed to apply acceleration setting"
+msgstr "应用加速设置失败"
+
+msgid "Applying..."
+msgstr "正在应用..."
+
+msgid "Invalid switch value"
+msgstr "开关值无效"
+
+msgid "Failed to save acceleration setting"
+msgstr "保存加速设置失败"
+
+msgid "Failed to save setting and restore engine state"
+msgstr "保存设置及恢复引擎状态失败"
+
+msgid "DPI Compatibility"
+msgstr "兼容DPI"
+
+msgid "Fastnat service is unavailable"
+msgstr "网络加速服务不可用"
+
+msgid "Failed to load Fastnat configuration"
+msgstr "读取网络加速配置失败"
+
+msgid "Fastnat controls are unavailable"
+msgstr "网络加速控制接口不可用"
+
+msgid "Failed to apply settings and restore engine state"
+msgstr "应用设置及恢复引擎状态失败"
+
+msgid "Improves NAT forwarding performance. It may conflict with some services."
+msgstr "用于提升NAT转发性能，注意可能和某些服务存在冲突。"
+
+msgid "Disabling this will affect application identification and application filtering. Are you sure you want to disable it?"
+msgstr "关闭后将会影响应用识别、应用过滤等功能，确定关闭吗？"
+
+msgid "Confirm"
+msgstr "确定"
+
+msgid "Cancel"
+msgstr "取消"
+
+msgid "Saved successfully"
+msgstr "保存成功"
+
+
+msgid "Accelerated Traffic"
+msgstr "已加速流量"

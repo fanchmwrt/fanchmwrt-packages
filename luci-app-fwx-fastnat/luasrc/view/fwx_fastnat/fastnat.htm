@@ -1,0 +1,205 @@
+<%+header%>
+<% local json = require "luci.jsonc" %>
+<link rel="stylesheet" href="<%=resource%>/css/common.css">
+<script src="<%=resource%>/jquery-3.7.1.min.js"></script>
+<script src="<%=resource%>/common.js"></script>
+<style>
+.switch input:disabled + .slider { opacity:.55; cursor:not-allowed; }
+.switch input:focus-visible + .slider { outline:2px solid #2196f3; outline-offset:3px; }
+.fastnat-state { display:flex; align-items:center; gap:8px; }
+.fastnat-dot { width:8px; height:8px; border-radius:50%; background:#9ca3af; }
+.fastnat-engine-desc { margin:0 0 16px; line-height:1.7; }
+.fastnat-counter { font-variant-numeric:tabular-nums; overflow-wrap:anywhere; min-width:0; }
+</style>
+
+<div class="fwx-form-card">
+  <div class="form-title"><%:Fastnat%></div>
+  <div class="form-desc fastnat-engine-desc"><%:Improves NAT forwarding performance. It may conflict with some services.%></div>
+  <div class="form-row">
+    <label class="form-label" for="fastnat-enabled"><%:Acceleration Engine%></label>
+    <label class="switch">
+      <input type="checkbox" id="fastnat-enabled" disabled>
+      <span class="slider"></span>
+    </label>
+  </div>
+  <div id="fastnat-details" style="display:none">
+    <div class="form-row">
+      <label class="form-label" for="fastnat-dpi-compat"><%:DPI Compatibility%></label>
+      <label class="switch">
+        <input type="checkbox" id="fastnat-dpi-compat" disabled>
+        <span class="slider"></span>
+      </label>
+    </div>
+    <div class="form-row">
+      <span class="form-label"><%:Engine Status%></span>
+      <div class="fastnat-state" role="status">
+        <span class="fastnat-dot" id="fastnat-dot" aria-hidden="true"></span>
+        <span id="fastnat-status"><%:Loading...%></span>
+      </div>
+    </div>
+    <div class="form-row">
+      <span class="form-label"><%:Currently Accelerated Connections%></span>
+      <span class="fastnat-counter" id="total-connections">--</span>
+    </div>
+    <div class="form-row">
+      <span class="form-label"><%:Accelerated Packets%></span>
+      <span class="fastnat-counter" id="accelerated-packets">--</span>
+    </div>
+    <div class="form-row">
+      <span class="form-label"><%:Accelerated Traffic%></span>
+      <span class="fastnat-counter" id="accelerated-bytes">--</span>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  var status_url = '<%=url("admin/fwx_network/fastnat_status")%>';
+  var config_url = '<%=url("admin/fwx_network/fastnat_config")%>';
+  var token = <%=json.stringify(luci.dispatcher.context.authtoken or "")%>;
+  var running = '<%:Running%>';
+  var disabled = '<%:Disabled%>';
+  var not_loaded = '<%:Acceleration module is not loaded%>';
+  var load_failed = '<%:Failed to load status%>';
+  var save_failed = '<%:Failed to apply acceleration setting%>';
+  var saving_text = '<%:Applying...%>';
+  var saved_text = '<%:Saved successfully%>';
+  var confirm_text = '<%:Confirm%>';
+  var cancel_text = '<%:Cancel%>';
+  var dpi_warning = '<%:Disabling this will affect application identification and application filtering. Are you sure you want to disable it?%>';
+  var timer = null;
+  var request = null;
+  var saving = false;
+  var confirming = false;
+  var loaded = false;
+  var load_error = false;
+  var active = true;
+
+  function number_text(value, grouped) {
+    var text = String(value == null ? '0' : value);
+    if (!/^\d+$/.test(text)) return '--';
+    return grouped === false ? text : text.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
+
+  function traffic_text(value) {
+    var text = String(value == null ? '0' : value);
+    if (!/^\d+$/.test(text)) return '--';
+    var bytes = Number(text);
+    if (!isFinite(bytes)) return '--';
+    var units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB'];
+    var unit = 0;
+    while (bytes >= 1024 && unit < units.length - 1) {
+      bytes /= 1024;
+      unit++;
+    }
+    return bytes.toFixed(unit >= 2 ? 1 : 0).replace(/\.0$/, '') + ' ' + units[unit];
+  }
+
+  function message(text, error) {
+    showCommonModal(text, error ? 2500 : 1000, error ? 'error' : 'success');
+  }
+
+  function render(data) {
+    loaded = data.loaded === true;
+    var enabled = loaded && data.enabled === true;
+    $('#fastnat-enabled').prop('checked', loaded ? enabled : data.configured_enabled === true)
+      .prop('disabled', saving || confirming || !loaded);
+    $('#fastnat-details').toggle(enabled);
+    $('#fastnat-dpi-compat').prop('checked', loaded ? data.dpi_compat === true : data.configured_dpi_compat === true)
+      .prop('disabled', saving || confirming || !enabled);
+    $('#fastnat-status').text(!loaded ? not_loaded : (enabled ? running : disabled));
+    $('#fastnat-dot').css('background', enabled ? '#22c55e' : '#9ca3af');
+    var totals = data.totals || {};
+    $('#total-connections').text(data.stats_available ? number_text(totals.total_connections) : '--');
+    $('#accelerated-packets').text(data.stats_available ? number_text(totals.accelerated_packets, false) : '--');
+    $('#accelerated-bytes').text(data.stats_available ? traffic_text(totals.accelerated_bytes) : '--');
+  }
+
+  function schedule_refresh() {
+    clearTimeout(timer);
+    if (active && !saving && !confirming) timer = setTimeout(refresh, 5000);
+  }
+
+  function status_error() {
+    $('#fastnat-enabled, #fastnat-dpi-compat').prop('disabled', true);
+    $('#fastnat-status').text(load_failed);
+    $('#fastnat-dot').css('background', '#9ca3af');
+    if (!load_error) message(load_failed, true);
+    load_error = true;
+  }
+
+  function refresh() {
+    if (!active || saving || confirming) return;
+    request = $.ajax({ url: status_url, dataType: 'json', cache: false, timeout: 10000 })
+      .done(function(resp) {
+        if (resp && resp.code === 2000 && resp.data) {
+          load_error = false;
+          render(resp.data);
+        } else {
+          status_error();
+        }
+      }).fail(function(xhr, status) {
+        if (status !== 'abort') status_error();
+      }).always(function() { request = null; schedule_refresh(); });
+  }
+
+  function pause_refresh() {
+    clearTimeout(timer);
+    if (request) request.abort();
+    $('#fastnat-enabled, #fastnat-dpi-compat').prop('disabled', true);
+  }
+
+  function save_config() {
+    if (!active || saving || !loaded) return;
+    saving = true;
+    pause_refresh();
+    var enabled = $('#fastnat-enabled').prop('checked') ? '1' : '0';
+    var dpi_compat = $('#fastnat-dpi-compat').prop('checked') ? '1' : '0';
+    if (enabled === '0') $('#fastnat-details').hide();
+    $('#fastnat-status').text(saving_text);
+    $.ajax({ url: config_url, type: 'POST', dataType: 'json', timeout: 30000,
+      data: { enabled: enabled, dpi_compat: dpi_compat, token: token } })
+      .done(function(resp) {
+        if (resp && resp.code === 2000 && resp.data) {
+          render(resp.data);
+          message(saved_text, false);
+        } else {
+          message((resp && resp.message) || save_failed, true);
+        }
+      }).fail(function(xhr) {
+        message((xhr.responseJSON && xhr.responseJSON.message) || save_failed, true);
+      }).always(function() {
+        saving = false;
+        refresh();
+      });
+  }
+
+  $('#fastnat-enabled, #fastnat-dpi-compat').on('change', function() {
+    if (saving || confirming || !loaded) return;
+    if (this.id === 'fastnat-dpi-compat' && !this.checked) {
+      $(this).prop('checked', true);
+      confirming = true;
+      pause_refresh();
+      showConfirmModal(dpi_warning, function() {
+        confirming = false;
+        $('#fastnat-dpi-compat').prop('checked', false);
+        save_config();
+      }, function() {
+        confirming = false;
+        $('#fastnat-enabled, #fastnat-dpi-compat').prop('disabled', !loaded);
+        schedule_refresh();
+      }, confirm_text, cancel_text);
+      return;
+    }
+    save_config();
+  });
+
+  $(window).on('pagehide', function() {
+    active = false;
+    clearTimeout(timer);
+    if (request) request.abort();
+  });
+  refresh();
+})();
+</script>
+<%+footer%>
